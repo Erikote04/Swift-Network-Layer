@@ -10,14 +10,23 @@ import Foundation
 public final class NetworkClient: NetworkClientProtocol {
 
     private let configuration: NetworkClientConfiguration
+    private let transport: Transport
 
-    public init(configuration: NetworkClientConfiguration = .init()) {
+    public init(
+        configuration: NetworkClientConfiguration = .init(),
+        session: URLSession = .shared
+    ) {
         self.configuration = configuration
+        self.transport = URLSessionTransport(session: session)
     }
 
     public func newCall(_ request: Request) -> Call {
         let resolvedRequest = resolve(request)
-        return StubCall(request: resolvedRequest)
+        
+        return TransportCall(
+            request: resolvedRequest,
+            transport: transport
+        )
     }
 
     private func resolve(_ request: Request) -> Request {
