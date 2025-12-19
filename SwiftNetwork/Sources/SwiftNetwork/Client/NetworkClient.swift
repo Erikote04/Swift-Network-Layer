@@ -22,9 +22,10 @@ public final class NetworkClient: NetworkClientProtocol {
 
     public func newCall(_ request: Request) -> Call {
         let resolvedRequest = resolve(request)
-        
-        return TransportCall(
+
+        return InterceptorCall(
             request: resolvedRequest,
+            interceptors: configuration.interceptors,
             transport: transport
         )
     }
