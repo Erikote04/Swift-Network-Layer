@@ -8,6 +8,7 @@
 import Foundation
 
 public struct RequestBuilder {
+    
     private var method: HTTPMethod
     private var url: URL
     private var headers: HTTPHeaders = [:]

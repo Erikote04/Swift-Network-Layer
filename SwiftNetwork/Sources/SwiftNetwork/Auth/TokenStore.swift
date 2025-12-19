@@ -8,6 +8,7 @@
 import Foundation
 
 public actor TokenStore {
+    
     private var token: String?
     private var refreshTask: Task<String, Error>?
 

@@ -8,6 +8,7 @@
 import Foundation
 
 public actor ResponseCache {
+    
     private var storage: [URL: CacheEntry] = [:]
     private let ttl: TimeInterval
 

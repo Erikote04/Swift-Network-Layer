@@ -8,6 +8,7 @@
 import Foundation
 
 public struct RetryInterceptor: Interceptor {
+    
     private let maxRetries: Int
     private let delay: TimeInterval
 

@@ -8,6 +8,7 @@
 import Foundation
 
 public struct Request: Sendable {
+    
     public let method: HTTPMethod
     public let url: URL
     public let headers: HTTPHeaders

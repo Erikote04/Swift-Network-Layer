@@ -11,4 +11,7 @@ public enum NetworkError: Error, Sendable {
     case cancelled
     case invalidResponse
     case transportError(Error)
+    case noData
+    case decodingError(Error)
+    case httpError(statusCode: Int, body: Data?)
 }

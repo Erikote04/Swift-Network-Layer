@@ -8,6 +8,7 @@
 import Foundation
 
 public struct AuthInterceptor: Interceptor {
+    
     private let tokenStore: TokenStore
     private let authenticator: Authenticator
 

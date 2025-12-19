@@ -8,6 +8,7 @@
 import Foundation
 
 final class InterceptorChain: InterceptorChainProtocol, @unchecked Sendable {
+    
     private let interceptors: [Interceptor]
     private let index: Int
     let request: Request

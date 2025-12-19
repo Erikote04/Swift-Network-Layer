@@ -8,6 +8,7 @@
 import Foundation
 
 final class InterceptorCall: BaseCall, @unchecked Sendable {
+    
     private let interceptors: [Interceptor]
     private let transport: Transport
 
