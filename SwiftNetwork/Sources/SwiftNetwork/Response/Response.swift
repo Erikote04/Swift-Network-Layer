@@ -28,6 +28,7 @@ public struct Response: Sendable {
 }
 
 public extension Response {
+    
     var isSuccessful: Bool {
         (200..<300).contains(statusCode)
     }
