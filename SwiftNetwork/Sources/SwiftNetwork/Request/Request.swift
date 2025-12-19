@@ -13,18 +13,21 @@ public struct Request: Sendable {
     public let headers: HTTPHeaders
     public let body: Data?
     public let timeout: TimeInterval?
+    public let cachePolicy: CachePolicy
 
     public init(
         method: HTTPMethod,
         url: URL,
         headers: HTTPHeaders = [:],
         body: Data? = nil,
-        timeout: TimeInterval? = nil
+        timeout: TimeInterval? = nil,
+        cachePolicy: CachePolicy = .useCache
     ) {
         self.method = method
         self.url = url
         self.headers = headers
         self.body = body
         self.timeout = timeout
+        self.cachePolicy = cachePolicy
     }
 }

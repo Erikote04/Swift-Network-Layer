@@ -13,6 +13,7 @@ public struct RequestBuilder {
     private var headers: HTTPHeaders = [:]
     private var body: Data?
     private var timeout: TimeInterval?
+    private var cachePolicy: CachePolicy = .useCache
 
     public init(method: HTTPMethod, url: URL) {
         self.method = method
@@ -38,6 +39,11 @@ public struct RequestBuilder {
         self.timeout = interval
         return self
     }
+    
+    public mutating func cachePolicy(_ policy: CachePolicy) -> Self {
+        self.cachePolicy = policy
+        return self
+    }
 
     public func build() -> Request {
         Request(
@@ -45,7 +51,8 @@ public struct RequestBuilder {
             url: url,
             headers: headers,
             body: body,
-            timeout: timeout
+            timeout: timeout,
+            cachePolicy: cachePolicy
         )
     }
 }
