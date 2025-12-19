@@ -8,6 +8,7 @@
 import Foundation
 
 public struct NetworkClientConfiguration: Sendable {
+    
     public let baseURL: URL?
     public let defaultHeaders: HTTPHeaders
     public let timeout: TimeInterval
