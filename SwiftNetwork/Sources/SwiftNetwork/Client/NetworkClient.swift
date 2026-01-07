@@ -12,6 +12,14 @@ public final class NetworkClient: NetworkClientProtocol {
     private let configuration: NetworkClientConfiguration
     private let transport: Transport
 
+    init(
+        transport: Transport,
+        interceptors: [Interceptor]
+    ) {
+        self.configuration = NetworkClientConfiguration(interceptors: interceptors)
+        self.transport = transport
+    }
+
     public init(
         configuration: NetworkClientConfiguration = .init(),
         session: URLSession = .shared
