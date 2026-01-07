@@ -11,6 +11,7 @@ public final class NetworkClient: NetworkClientProtocol {
 
     private let configuration: NetworkClientConfiguration
     private let transport: Transport
+    private let authCoordinator = AuthRefreshCoordinator()
 
     init(
         transport: Transport,
@@ -33,9 +34,23 @@ public final class NetworkClient: NetworkClientProtocol {
 
         return InterceptorCall(
             request: resolvedRequest,
-            interceptors: configuration.interceptors,
+            interceptors: resolvedInterceptors(),
             transport: transport
         )
+    }
+    
+    private func resolvedInterceptors() -> [Interceptor] {
+        configuration.interceptors.map { interceptor in
+            if let authInterceptor = interceptor as? AuthInterceptor {
+                return AuthInterceptor(
+                    tokenStore: authInterceptor.tokenStore,
+                    authenticator: authInterceptor.authenticator,
+                    coordinator: authCoordinator
+                )
+            }
+
+            return interceptor
+        }
     }
 
     private func resolve(_ request: Request) -> Request {
