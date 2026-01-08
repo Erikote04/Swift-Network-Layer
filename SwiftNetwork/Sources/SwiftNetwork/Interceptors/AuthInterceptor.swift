@@ -36,45 +36,33 @@ public struct AuthInterceptor: Interceptor {
     public func intercept(_ chain: InterceptorChainProtocol) async throws -> Response {
         let originalRequest = chain.request
 
-        if let token = await tokenStore.currentToken() {
-            var headers = originalRequest.headers
-            headers["Authorization"] = "Bearer \(token)"
+        guard let usedToken = await tokenStore.currentToken() else {
+            return try await chain.proceed(originalRequest)
+        }
 
-            let authenticatedRequest = Request(
-                method: originalRequest.method,
-                url: originalRequest.url,
-                headers: headers,
-                body: originalRequest.body,
-                timeout: originalRequest.timeout,
-                cachePolicy: originalRequest.cachePolicy
-            )
+        var headers = originalRequest.headers
+        headers["Authorization"] = "Bearer \(usedToken)"
 
-            let response = try await chain.proceed(authenticatedRequest)
+        let authenticatedRequest = Request(
+            method: originalRequest.method,
+            url: originalRequest.url,
+            headers: headers,
+            body: originalRequest.body,
+            timeout: originalRequest.timeout,
+            cachePolicy: originalRequest.cachePolicy
+        )
 
-            guard response.statusCode == 401 else {
-                return response
-            }
+        let response = try await chain.proceed(authenticatedRequest)
 
-            let refreshedToken = try await coordinator.refreshIfNeeded(
-                tokenStore: tokenStore
-            ) {
-                if let newRequest = try await authenticator.authenticate(
-                    request: authenticatedRequest,
-                    response: response
-                ),
-                let authHeader = newRequest.headers["Authorization"] {
-                    return authHeader.replacingOccurrences(of: "Bearer ", with: "")
-                }
-                
-                return nil
-            }
+        guard response.statusCode == 401 else {
+            return response
+        }
 
-            guard let token = refreshedToken else {
-                return response
-            }
+        if let currentToken = await tokenStore.currentToken(),
+           currentToken != usedToken {
 
             var retryHeaders = originalRequest.headers
-            retryHeaders["Authorization"] = "Bearer \(token)"
+            retryHeaders["Authorization"] = "Bearer \(currentToken)"
 
             let retryRequest = Request(
                 method: originalRequest.method,
@@ -88,6 +76,36 @@ public struct AuthInterceptor: Interceptor {
             return try await chain.proceed(retryRequest)
         }
 
-        return try await chain.proceed(originalRequest)
+        let refreshedToken = try await coordinator.refreshIfNeeded(
+            tokenStore: tokenStore
+        ) {
+            if let newRequest = try await authenticator.authenticate(
+                request: authenticatedRequest,
+                response: response
+            ),
+            let authHeader = newRequest.headers["Authorization"] {
+                return authHeader.replacingOccurrences(of: "Bearer ", with: "")
+            }
+            
+            return nil
+        }
+
+        guard let token = refreshedToken else {
+            return response
+        }
+
+        var retryHeaders = originalRequest.headers
+        retryHeaders["Authorization"] = "Bearer \(token)"
+
+        let retryRequest = Request(
+            method: originalRequest.method,
+            url: originalRequest.url,
+            headers: retryHeaders,
+            body: originalRequest.body,
+            timeout: originalRequest.timeout,
+            cachePolicy: originalRequest.cachePolicy
+        )
+
+        return try await chain.proceed(retryRequest)
     }
 }

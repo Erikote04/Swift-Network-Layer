@@ -29,7 +29,11 @@ public struct CacheInterceptor: Interceptor {
         }
 
         let response = try await chain.proceed(request)
-        await cache.store(response)
+
+        if (200..<300).contains(response.statusCode) {
+            await cache.store(response)
+        }
+
         return response
     }
 }
