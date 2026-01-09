@@ -8,6 +8,7 @@
 import Foundation
 
 enum CallState: Sendable {
+    
     case idle
     case running
     case completed

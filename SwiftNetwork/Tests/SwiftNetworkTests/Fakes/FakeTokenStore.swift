@@ -26,4 +26,3 @@ actor FakeTokenStore: TokenStore {
         updates += 1
     }
 }
-

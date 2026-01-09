@@ -6,6 +6,7 @@
 //
 
 import Foundation
+
 actor Recorder {
 
     private(set) var events: [String] = []

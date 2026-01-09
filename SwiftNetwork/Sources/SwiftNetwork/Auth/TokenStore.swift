@@ -8,6 +8,8 @@
 import Foundation
 
 public protocol TokenStore: Sendable {
+    
     func currentToken() async -> String?
+    
     func updateToken(_ newToken: String) async
 }

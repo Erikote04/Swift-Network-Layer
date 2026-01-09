@@ -8,6 +8,7 @@
 import Foundation
 
 public enum CachePolicy: Sendable {
+    
     case useCache
     case reloadIgnoringCache
 }

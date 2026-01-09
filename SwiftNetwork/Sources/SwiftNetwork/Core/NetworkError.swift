@@ -8,6 +8,7 @@
 import Foundation
 
 public enum NetworkError: Error, Sendable {
+    
     case cancelled
     case invalidResponse
     case transportError(Error)

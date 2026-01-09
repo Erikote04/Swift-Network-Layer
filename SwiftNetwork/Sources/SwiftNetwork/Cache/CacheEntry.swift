@@ -8,6 +8,7 @@
 import Foundation
 
 struct CacheEntry: Sendable {
+    
     let response: Response
     let timestamp: Date
 }
