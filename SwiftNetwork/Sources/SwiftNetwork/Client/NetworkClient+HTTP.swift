@@ -9,6 +9,13 @@ import Foundation
 
 public extension NetworkClient {
 
+    /// Performs a GET request and decodes the response into the expected type.
+    ///
+    /// - Parameters:
+    ///   - path: The request path or URL string.
+    ///   - headers: Additional headers to include in the request.
+    ///   - cachePolicy: Defines how caching should be applied.
+    /// - Returns: A decoded response of type `T`.
     func get<T: Decodable>(
         _ path: String,
         headers: HTTPHeaders = [:],
@@ -23,13 +30,20 @@ public extension NetworkClient {
         )
     }
 
+    /// Performs a POST request with an encodable body and decodes the response.
+    ///
+    /// - Parameters:
+    ///   - path: The request path or URL string.
+    ///   - body: The encodable request body.
+    ///   - headers: Additional headers to include in the request.
+    /// - Returns: A decoded response of type `T`.
     func post<T: Decodable, Body: Encodable>(
         _ path: String,
         body: Body,
         headers: HTTPHeaders = [:]
     ) async throws -> T {
         let data = try JSONEncoder().encode(body)
-        
+
         return try await request(
             method: .post,
             path: path,
@@ -39,6 +53,15 @@ public extension NetworkClient {
         )
     }
 
+    /// Executes a request and decodes the response into the expected type.
+    ///
+    /// - Parameters:
+    ///   - method: The HTTP method to use.
+    ///   - path: The request path or URL string.
+    ///   - headers: Headers to include in the request.
+    ///   - body: Optional request body data.
+    ///   - cachePolicy: Defines how caching should be applied.
+    /// - Returns: A decoded response of type `T`.
     private func request<T: Decodable>(
         method: HTTPMethod,
         path: String,
@@ -47,6 +70,7 @@ public extension NetworkClient {
         cachePolicy: CachePolicy
     ) async throws -> T {
         let url = URL(string: path)!
+        
         let request = Request(
             method: method,
             url: url,

@@ -7,12 +7,27 @@
 
 import Foundation
 
+/// The main entry point of the SwiftNetwork framework.
+///
+/// `NetworkClient` is responsible for creating and executing network calls.
+/// It applies global configuration such as base URL resolution, default headers,
+/// interceptors, and transport selection.
+///
+/// A single `NetworkClient` instance is intended to be reused across the
+/// application lifecycle.
 public final class NetworkClient: NetworkClientProtocol {
 
     private let configuration: NetworkClientConfiguration
     private let transport: Transport
     private let authCoordinator = AuthRefreshCoordinator()
 
+    /// Creates a network client using a custom transport and a set of interceptors.
+    ///
+    /// This initializer is intended for internal usage and testing.
+    ///
+    /// - Parameters:
+    ///   - transport: The transport responsible for executing requests.
+    ///   - interceptors: The interceptors applied to every request.
     init(
         transport: Transport,
         interceptors: [Interceptor]
@@ -21,6 +36,11 @@ public final class NetworkClient: NetworkClientProtocol {
         self.transport = transport
     }
 
+    /// Creates a network client with a given configuration and URL session.
+    ///
+    /// - Parameters:
+    ///   - configuration: Defines base URL, default headers, timeout, and interceptors.
+    ///   - session: The URLSession used by the underlying transport.
     public init(
         configuration: NetworkClientConfiguration = .init(),
         session: URLSession = .shared
@@ -29,6 +49,12 @@ public final class NetworkClient: NetworkClientProtocol {
         self.transport = URLSessionTransport(session: session)
     }
 
+    /// Creates a new executable network call for the given request.
+    ///
+    /// The request is resolved against the client configuration before execution.
+    ///
+    /// - Parameter request: The request to execute.
+    /// - Returns: A `Call` representing the executable request.
     public func newCall(_ request: Request) -> Call {
         let resolvedRequest = resolve(request)
 
@@ -38,7 +64,13 @@ public final class NetworkClient: NetworkClientProtocol {
             transport: transport
         )
     }
-    
+
+    /// Resolves interceptors for a call, injecting shared coordination when required.
+    ///
+    /// This is primarily used to ensure that authentication interceptors
+    /// share the same refresh coordination context.
+    ///
+    /// - Returns: The list of interceptors to be applied to the call.
     private func resolvedInterceptors() -> [Interceptor] {
         configuration.interceptors.map { interceptor in
             if let authInterceptor = interceptor as? AuthInterceptor {
@@ -53,6 +85,13 @@ public final class NetworkClient: NetworkClientProtocol {
         }
     }
 
+    /// Resolves a request by applying global configuration.
+    ///
+    /// This includes base URL resolution, default headers merging,
+    /// and timeout resolution.
+    ///
+    /// - Parameter request: The original request.
+    /// - Returns: A fully resolved request ready for execution.
     private func resolve(_ request: Request) -> Request {
         var finalURL = request.url
 
