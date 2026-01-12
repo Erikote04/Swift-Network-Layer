@@ -1,0 +1,56 @@
+name: Deploy DocC Documentation
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: "6.1"
+
+      - name: Build DocC
+        working-directory: SwiftNetwork
+        run: |
+          mkdir -p .docs
+          swift package \
+            --allow-writing-to-directory .docs \
+            generate-documentation \
+            --target SwiftNetwork \
+            --disable-indexing \
+            --transform-for-static-hosting \
+            --hosting-base-path Swift-Network-Layer \
+            --output-path .docs
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: 'SwiftNetwork/.docs'
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
