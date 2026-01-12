@@ -18,6 +18,7 @@ final class TokenDemoViewModel {
     var tokenRefreshLog: [String] = []
     var isRunning = false
     var totalRefreshes = 0
+    var refreshingRequestNumber: Int?  // NEW: Tracks which request is doing the refresh
     
     // MARK: - Dependencies
     
@@ -94,12 +95,40 @@ final class TokenDemoViewModel {
     private func setupNetworkClient() {
         let authenticator = FakeAuthenticator(
             tokenStore: tokenStore,
-            authService: authService
-        ) { event in
-            Task { @MainActor in
-                self.addLog(event)
+            authService: authService,
+            onAuthEvent: { event in
+                Task { @MainActor in
+                    self.addLog(event)
+                }
+            },
+            onRefreshStart: {
+                // Mark ALL requests that are waiting as "waiting for token"
+                Task { @MainActor in
+                    // Find the first executing request - that's the one refreshing
+                    if let refreshingIndex = self.requests.firstIndex(where: { $0.status == .executing }) {
+                        self.refreshingRequestNumber = self.requests[refreshingIndex].requestNumber
+                        self.requests[refreshingIndex].updateStatus(
+                            .refreshingToken,
+                            message: "Request #\(self.requests[refreshingIndex].requestNumber) is refreshing token... 🔄",
+                            isRefreshingToken: true
+                        )
+                        self.addLog("🔑 Request #\(self.requests[refreshingIndex].requestNumber) is THE ONE refreshing the token!")
+                    }
+                    
+                    // Mark all other executing requests as waiting
+                    for i in 0..<self.requests.count {
+                        if self.requests[i].status == .executing &&
+                           self.requests[i].requestNumber != self.refreshingRequestNumber {
+                            self.requests[i].updateStatus(
+                                .waitingForToken,
+                                message: "Request #\(self.requests[i].requestNumber) waiting for token..."
+                            )
+                            self.addLog("⏳ Request #\(self.requests[i].requestNumber) is waiting for the refresh")
+                        }
+                    }
+                }
             }
-        }
+        )
         
         let config = NetworkClientConfiguration(
             baseURL: URL(string: "https://rickandmortyapi.com/api")!,
@@ -181,6 +210,7 @@ final class TokenDemoViewModel {
         tokenRefreshLog = []
         currentToken = nil
         totalRefreshes = 0
+        refreshingRequestNumber = nil
         
         Task {
             await authService.reset()

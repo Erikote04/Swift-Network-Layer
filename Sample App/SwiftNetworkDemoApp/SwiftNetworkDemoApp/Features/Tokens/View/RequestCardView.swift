@@ -19,8 +19,24 @@ struct RequestCardView: View {
             
             // Request info
             VStack(alignment: .leading, spacing: 4) {
-                Text("Request #\(request.requestNumber)")
-                    .font(.headline)
+                HStack {
+                    Text("Request #\(request.requestNumber)")
+                        .font(.headline)
+                    
+                    // Special badge for the request refreshing the token
+                    if request.isRefreshingToken && request.status == .refreshingToken {
+                        Text("REFRESHING TOKEN")
+                            .font(.caption2)
+                            .fontWeight(.bold)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 3)
+                            .background(
+                                Capsule()
+                                    .fill(Color.orange)
+                            )
+                    }
+                }
                 
                 Text(request.message)
                     .font(.caption)
@@ -40,7 +56,7 @@ struct RequestCardView: View {
         .cornerRadius(10)
         .overlay(
             RoundedRectangle(cornerRadius: 10)
-                .stroke(borderColor, lineWidth: 1)
+                .stroke(borderColor, lineWidth: request.isRefreshingToken ? 2 : 1)
         )
     }
     
@@ -69,9 +85,26 @@ struct RequestCardView: View {
             ZStack {
                 Circle()
                     .fill(Color.orange.opacity(0.2))
+                    .overlay(
+                        Circle()
+                            .stroke(Color.orange, lineWidth: 3)
+                            .scaleEffect(request.isRefreshingToken ? 1.2 : 1.0)
+                            .opacity(request.isRefreshingToken ? 0 : 1)
+                            .animation(.easeOut(duration: 1.0).repeatForever(autoreverses: false), value: request.isRefreshingToken)
+                    )
                 Image(systemName: "arrow.triangle.2.circlepath")
                     .foregroundStyle(.orange)
+                    .fontWeight(.bold)
                     .symbolEffect(.rotate, options: .repeating)
+            }
+            
+        case .waitingForToken:
+            ZStack {
+                Circle()
+                    .fill(Color.purple.opacity(0.2))
+                Image(systemName: "hourglass")
+                    .foregroundStyle(.purple)
+                    .symbolEffect(.pulse, options: .repeating)
             }
             
         case .success:
@@ -98,8 +131,12 @@ struct RequestCardView: View {
         switch request.status {
         case .waiting:
             return Color(.systemGray6)
-        case .executing, .refreshingToken:
+        case .executing:
             return Color.blue.opacity(0.05)
+        case .refreshingToken:
+            return request.isRefreshingToken ? Color.orange.opacity(0.15) : Color.orange.opacity(0.05)
+        case .waitingForToken:
+            return Color.purple.opacity(0.05)
         case .success:
             return Color.green.opacity(0.05)
         case .failed:
@@ -111,8 +148,12 @@ struct RequestCardView: View {
         switch request.status {
         case .waiting:
             return Color.gray.opacity(0.3)
-        case .executing, .refreshingToken:
+        case .executing:
             return Color.blue.opacity(0.3)
+        case .refreshingToken:
+            return request.isRefreshingToken ? Color.orange : Color.orange.opacity(0.3)
+        case .waitingForToken:
+            return Color.purple.opacity(0.3)
         case .success:
             return Color.green.opacity(0.3)
         case .failed:

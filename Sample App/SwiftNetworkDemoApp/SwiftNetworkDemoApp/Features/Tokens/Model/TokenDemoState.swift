@@ -14,11 +14,13 @@ struct RequestState: Identifiable {
     var status: Status
     var message: String
     var timestamp: Date
+    var isRefreshingToken: Bool  // NEW: Indicates if this request is the one refreshing
     
     enum Status {
         case waiting
         case executing
-        case refreshingToken
+        case refreshingToken  // This request is refreshing the token
+        case waitingForToken  // This request is waiting for another to refresh
         case success
         case failed
     }
@@ -29,11 +31,13 @@ struct RequestState: Identifiable {
         self.status = .waiting
         self.message = "Request #\(requestNumber) waiting..."
         self.timestamp = Date()
+        self.isRefreshingToken = false
     }
     
-    mutating func updateStatus(_ status: Status, message: String) {
+    mutating func updateStatus(_ status: Status, message: String, isRefreshingToken: Bool = false) {
         self.status = status
         self.message = message
         self.timestamp = Date()
+        self.isRefreshingToken = isRefreshingToken
     }
 }

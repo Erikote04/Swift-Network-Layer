@@ -16,6 +16,7 @@ struct FakeAuthenticator: Authenticator {
     
     /// Callback for authentication events (for UI updates)
     let onAuthEvent: @Sendable (String) -> Void
+    let onRefreshStart: @Sendable () -> Void  // NEW: Called when refresh starts
     
     func authenticate(request: Request, response: Response) async throws -> Request? {
         // Only handle 401 Unauthorized
@@ -24,6 +25,7 @@ struct FakeAuthenticator: Authenticator {
         }
         
         onAuthEvent("🔒 401 detected - attempting token refresh...")
+        onRefreshStart()  // Notify that THIS request is starting the refresh
         
         // Refresh the token
         let newToken = try await authService.refreshToken()
