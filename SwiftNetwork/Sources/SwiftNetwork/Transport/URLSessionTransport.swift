@@ -7,14 +7,28 @@
 
 import Foundation
 
+/// A `Transport` implementation backed by `URLSession`.
+///
+/// `URLSessionTransport` adapts SwiftNetwork requests to `URLSession`,
+/// handling request conversion, execution, and response mapping.
 final class URLSessionTransport: Transport {
 
     private let session: URLSession
 
+    /// Creates a new URLSession-based transport.
+    ///
+    /// - Parameter session: The URLSession instance used to perform requests.
+    ///   Defaults to `URLSession.shared`.
     init(session: URLSession = .shared) {
         self.session = session
     }
 
+    /// Executes a request using `URLSession`.
+    ///
+    /// - Parameter request: The request to execute.
+    /// - Returns: A `Response` containing the server response.
+    /// - Throws: A `NetworkError` if execution fails, is cancelled,
+    ///   or the response is invalid.
     func execute(_ request: Request) async throws -> Response {
         let urlRequest = try makeURLRequest(from: request)
 
@@ -38,6 +52,11 @@ final class URLSessionTransport: Transport {
         }
     }
 
+    /// Converts a `Request` into a `URLRequest`.
+    ///
+    /// - Parameter request: The SwiftNetwork request to convert.
+    /// - Returns: A configured `URLRequest`.
+    /// - Throws: An error if request construction fails.
     private func makeURLRequest(from request: Request) throws -> URLRequest {
         var urlRequest = URLRequest(url: request.url)
         urlRequest.httpMethod = request.method.rawValue

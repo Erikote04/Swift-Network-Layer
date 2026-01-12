@@ -7,7 +7,17 @@
 
 import Foundation
 
+/// A protocol defining a low-level network transport.
+///
+/// `Transport` is responsible for executing a fully constructed `Request`
+/// and returning a `Response`. It represents the final execution layer of
+/// the networking stack, after all interceptors have been applied.
 protocol Transport: Sendable {
-    
+
+    /// Executes the given request.
+    ///
+    /// - Parameter request: The request to execute.
+    /// - Returns: A `Response` representing the result of the request.
+    /// - Throws: A `NetworkError` if the request fails or is cancelled.
     func execute(_ request: Request) async throws -> Response
 }
