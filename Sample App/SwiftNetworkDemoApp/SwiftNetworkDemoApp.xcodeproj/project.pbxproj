@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BB20D8142F1587AB00206192 /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BB20D8132F1587AB00206192 /* SwiftNetwork */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BB20D8042F15870400206192 /* SwiftNetworkDemoApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftNetworkDemoApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BB20D8142F1587AB00206192 /* SwiftNetwork in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = SwiftNetworkDemoApp;
 			packageProductDependencies = (
+				BB20D8132F1587AB00206192 /* SwiftNetwork */,
 			);
 			productName = SwiftNetworkDemoApp;
 			productReference = BB20D8042F15870400206192 /* SwiftNetworkDemoApp.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = BB20D7FB2F15870400206192;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BB20D8122F1587AB00206192 /* XCLocalSwiftPackageReference "../../SwiftNetwork" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BB20D8052F15870400206192 /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		BB20D8122F1587AB00206192 /* XCLocalSwiftPackageReference "../../SwiftNetwork" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../SwiftNetwork;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BB20D8132F1587AB00206192 /* SwiftNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftNetwork;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BB20D7FC2F15870400206192 /* Project object */;
 }
