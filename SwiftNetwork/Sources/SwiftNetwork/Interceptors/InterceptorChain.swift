@@ -7,13 +7,24 @@
 
 import Foundation
 
+/// The concrete implementation of an interceptor chain.
+///
+/// `InterceptorChain` is responsible for invoking interceptors sequentially
+/// and eventually delegating execution to the terminal handler.
 final class InterceptorChain: InterceptorChainProtocol, @unchecked Sendable {
-    
+
     private let interceptors: [Interceptor]
     private let index: Int
     let request: Request
     private let terminalHandler: (Request) async throws -> Response
 
+    /// Creates a new interceptor chain.
+    ///
+    /// - Parameters:
+    ///   - interceptors: The full list of interceptors.
+    ///   - index: The current interceptor index.
+    ///   - request: The current request.
+    ///   - terminalHandler: The final request executor.
     init(
         interceptors: [Interceptor],
         index: Int,
@@ -26,6 +37,11 @@ final class InterceptorChain: InterceptorChainProtocol, @unchecked Sendable {
         self.terminalHandler = terminalHandler
     }
 
+    /// Proceeds to the next interceptor or executes the terminal handler.
+    ///
+    /// - Parameter request: The request to forward.
+    /// - Returns: The resulting `Response`.
+    /// - Throws: Any error produced during interception.
     func proceed(_ request: Request) async throws -> Response {
         if index < interceptors.count {
             let next = InterceptorChain(

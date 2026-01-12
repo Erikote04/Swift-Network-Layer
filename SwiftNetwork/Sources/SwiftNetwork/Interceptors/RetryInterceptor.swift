@@ -7,16 +7,30 @@
 
 import Foundation
 
+/// An interceptor that retries failed requests.
+///
+/// `RetryInterceptor` retries requests when certain recoverable
+/// network errors occur, up to a configurable maximum number of attempts.
 public struct RetryInterceptor: Interceptor {
-    
+
     private let maxRetries: Int
     private let delay: TimeInterval
 
+    /// Creates a new retry interceptor.
+    ///
+    /// - Parameters:
+    ///   - maxRetries: The maximum number of retry attempts.
+    ///   - delay: The delay between retry attempts.
     public init(maxRetries: Int = 3, delay: TimeInterval = 0.5) {
         self.maxRetries = maxRetries
         self.delay = delay
     }
 
+    /// Intercepts a request and retries it if a retryable error occurs.
+    ///
+    /// - Parameter chain: The interceptor chain.
+    /// - Returns: The resulting `Response`.
+    /// - Throws: The final error if retries are exhausted or not retryable.
     public func intercept(_ chain: InterceptorChainProtocol) async throws -> Response {
         var attempt = 0
 
@@ -36,6 +50,10 @@ public struct RetryInterceptor: Interceptor {
         }
     }
 
+    /// Determines whether a given error should trigger a retry.
+    ///
+    /// - Parameter error: The encountered network error.
+    /// - Returns: `true` if the request should be retried.
     private func shouldRetry(for error: NetworkError) -> Bool {
         switch error {
         case .transportError: return true

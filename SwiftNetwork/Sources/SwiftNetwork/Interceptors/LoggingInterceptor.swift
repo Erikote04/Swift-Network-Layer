@@ -7,8 +7,14 @@
 
 import Foundation
 
+/// An interceptor that logs requests and responses.
+///
+/// `LoggingInterceptor` supports multiple verbosity levels,
+/// ranging from basic request/response information to full headers
+/// and body logging.
 public struct LoggingInterceptor: Interceptor {
 
+    /// Defines the logging verbosity level.
     public enum Level: Sendable {
         case none
         case basic
@@ -18,10 +24,18 @@ public struct LoggingInterceptor: Interceptor {
 
     private let level: Level
 
+    /// Creates a new logging interceptor.
+    ///
+    /// - Parameter level: The desired logging level.
     public init(level: Level = .basic) {
         self.level = level
     }
 
+    /// Intercepts a request to log request and response details.
+    ///
+    /// - Parameter chain: The interceptor chain.
+    /// - Returns: The resulting `Response`.
+    /// - Throws: Any error produced during request execution.
     public func intercept(_ chain: InterceptorChainProtocol) async throws -> Response {
         guard level != .none else {
             return try await chain.proceed(chain.request)

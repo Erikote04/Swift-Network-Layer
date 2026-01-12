@@ -7,14 +7,26 @@
 
 import Foundation
 
+/// An interceptor that provides response caching for GET requests.
+///
+/// `CacheInterceptor` serves cached responses when available and stores
+/// successful responses based on the request's cache policy.
 public struct CacheInterceptor: Interceptor {
 
     private let cache: ResponseCache
 
+    /// Creates a new cache interceptor.
+    ///
+    /// - Parameter cache: The response cache used to store and retrieve responses.
     public init(cache: ResponseCache) {
         self.cache = cache
     }
 
+    /// Intercepts a request to return cached responses or store new ones.
+    ///
+    /// - Parameter chain: The interceptor chain.
+    /// - Returns: The resulting `Response`.
+    /// - Throws: Any error produced during request execution.
     public func intercept(_ chain: InterceptorChainProtocol) async throws -> Response {
         let request = chain.request
 
