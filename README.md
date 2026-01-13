@@ -555,7 +555,7 @@ do {
 
 ## Documentation
 
-Explore the **[Documentation](https://erikote04.github.io/Swift-Network-Layer/documentation/swiftnetwork/)** to see more details
+Explore the **[Documentation](https://erikote04.github.io/Swift-Network-Layer/documentation/swiftnetwork/)** to see more details or launch the Demo App from the Sample App folder and take a look at the [README.md](https://github.com/Erikote04/Swift-Network-Layer/blob/main/Sample%20App/README.md) file for further explanation.
 
 ## Requirements
 
