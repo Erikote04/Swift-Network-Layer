@@ -2,8 +2,6 @@
 
 SwiftNetwork is a modern, interceptor-driven networking library for Swift, inspired by OkHttp and built on top of `URLSession`, Swift Concurrency, and structured async/await APIs. It provides a clean and extensible networking layer that allows applications to focus on business logic while delegating networking concerns—such as authentication, retries, caching, logging, and timeouts—to composable interceptors.
 
----
-
 ## Overview
 
 SwiftNetwork is designed around a simple idea:
