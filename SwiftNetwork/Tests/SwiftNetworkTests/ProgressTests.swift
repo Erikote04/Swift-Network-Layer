@@ -86,7 +86,8 @@ struct ProgressTests {
             let call = TransportCall(request: request, transport: transport)
             
             // Use confirmation to validate progress callbacks
-            await confirmation("Progress callback is invoked") { confirm in
+            // Progress may be called multiple times, so use a range
+            await confirmation("Progress callback is invoked", expectedCount: 1...10) { confirm in
                 if let progressCall = call as? ProgressCall {
                     _ = try? await progressCall.execute { progress in
                         // Progress callback was invoked

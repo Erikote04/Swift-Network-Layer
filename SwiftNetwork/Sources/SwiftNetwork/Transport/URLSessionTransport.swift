@@ -76,6 +76,61 @@ final class URLSessionTransport: Transport {
         }
     }
     
+    /// Executes a request and streams the response data.
+    ///
+    /// - Parameter request: The request to execute.
+    /// - Returns: A `StreamingResponse` with metadata and data stream.
+    /// - Throws: A `NetworkError` if execution fails or is cancelled.
+    func stream(_ request: Request) async throws -> StreamingResponse {
+        let urlRequest = try makeURLRequest(from: request)
+        
+        // Use bytes(for:) API which returns AsyncSequence
+        let (bytes, response) = try await session.bytes(for: urlRequest)
+        
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        
+        // Convert AsyncSequence<UInt8> to AsyncThrowingStream<Data>
+        let stream = AsyncThrowingStream<Data, Error> { continuation in
+            Task {
+                do {
+                    var buffer = Data()
+                    buffer.reserveCapacity(8192) // 8KB buffer
+                    
+                    for try await byte in bytes {
+                        buffer.append(byte)
+                        
+                        // Yield chunks of ~8KB
+                        if buffer.count >= 8192 {
+                            continuation.yield(buffer)
+                            buffer = Data()
+                            buffer.reserveCapacity(8192)
+                        }
+                    }
+                    
+                    // Yield remaining data
+                    if !buffer.isEmpty {
+                        continuation.yield(buffer)
+                    }
+                    
+                    continuation.finish()
+                } catch is CancellationError {
+                    continuation.finish(throwing: NetworkError.cancelled)
+                } catch {
+                    continuation.finish(throwing: NetworkError.transportError(error))
+                }
+            }
+        }
+        
+        return StreamingResponse(
+            request: request,
+            statusCode: httpResponse.statusCode,
+            headers: HTTPHeaders(httpResponse.allHeaderFields as? [String: String] ?? [:]),
+            stream: stream
+        )
+    }
+    
     /// Executes a request with progress tracking using URLSessionDelegate.
     ///
     /// - Parameters:

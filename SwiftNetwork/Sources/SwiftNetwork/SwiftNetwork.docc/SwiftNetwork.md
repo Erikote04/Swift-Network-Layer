@@ -142,6 +142,8 @@ let user: User = try await client.get("/user")
 * ``Call``
 * ``ProgressCall``
 * ``Progress``
+* ``StreamingCall``
+* ``StreamingResponse``
 
 ### Interceptors
 

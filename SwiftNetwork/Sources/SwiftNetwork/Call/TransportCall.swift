@@ -11,8 +11,8 @@ import Foundation
 ///
 /// `TransportCall` bypasses interceptors and executes the request
 /// directly using the provided `Transport`. It supports progress reporting
-/// for uploads and downloads when the transport is `URLSessionTransport`.
-final class TransportCall: BaseCall, ProgressCall, @unchecked Sendable {
+/// and streaming for uploads and downloads when the transport is `URLSessionTransport`.
+final class TransportCall: BaseCall, ProgressCall, StreamingCall, @unchecked Sendable {
 
     private let transport: Transport
 
@@ -52,5 +52,42 @@ final class TransportCall: BaseCall, ProgressCall, @unchecked Sendable {
         
         // Fallback to regular execution
         return try await execute()
+    }
+    
+    /// Streams the response data as chunks.
+    ///
+    /// Streaming is only supported when the transport is `URLSessionTransport`.
+    /// For other transports, this falls back to loading the entire response
+    /// and yielding it as a single chunk.
+    ///
+    /// - Returns: An `AsyncThrowingStream` of data chunks.
+    public func stream() -> AsyncThrowingStream<Data, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    // Check if transport supports streaming
+                    if let urlSessionTransport = transport as? URLSessionTransport {
+                        let streamingResponse = try await urlSessionTransport.stream(request)
+                        
+                        for try await chunk in streamingResponse.stream {
+                            continuation.yield(chunk)
+                        }
+                        
+                        continuation.finish()
+                    } else {
+                        // Fallback: execute normally and yield as single chunk
+                        let response = try await execute()
+                        
+                        if let body = response.body, !body.isEmpty {
+                            continuation.yield(body)
+                        }
+                        
+                        continuation.finish()
+                    }
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
     }
 }

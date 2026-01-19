@@ -11,8 +11,8 @@ import Foundation
 ///
 /// `InterceptorCall` composes multiple `Interceptor` instances and
 /// ultimately delegates the request execution to a `Transport`. It supports
-/// progress reporting, which is passed through to the final transport call.
-final class InterceptorCall: BaseCall, ProgressCall, @unchecked Sendable {
+/// progress reporting and streaming when the underlying transport supports them.
+final class InterceptorCall: BaseCall, ProgressCall, StreamingCall, @unchecked Sendable {
 
     private let interceptors: [Interceptor]
     private let transport: Transport
@@ -87,6 +87,42 @@ final class InterceptorCall: BaseCall, ProgressCall, @unchecked Sendable {
         }
 
         return try await chain.proceed(request)
+    }
+    
+    /// Streams the response data as chunks.
+    ///
+    /// Streaming bypasses the interceptor chain and goes directly to the transport.
+    /// This is because interceptors typically need the complete response to operate.
+    ///
+    /// - Returns: An `AsyncThrowingStream` of data chunks.
+    public func stream() -> AsyncThrowingStream<Data, Error> {
+        AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    // Check if transport supports streaming
+                    if let urlSessionTransport = transport as? URLSessionTransport {
+                        let streamingResponse = try await urlSessionTransport.stream(request)
+                        
+                        for try await chunk in streamingResponse.stream {
+                            continuation.yield(chunk)
+                        }
+                        
+                        continuation.finish()
+                    } else {
+                        // Fallback: execute through interceptor chain and yield as single chunk
+                        let response = try await performExecute(progress: nil)
+                        
+                        if let body = response.body, !body.isEmpty {
+                            continuation.yield(body)
+                        }
+                        
+                        continuation.finish()
+                    }
+                } catch {
+                    continuation.finish(throwing: error)
+                }
+            }
+        }
     }
     
     // MARK: - Private Helpers (duplicated from BaseCall)
