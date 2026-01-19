@@ -104,6 +104,37 @@ public struct RequestBuilder {
         self.body = .form(fields)
         return self
     }
+    
+    /// Sets a multipart/form-data request body.
+    ///
+    /// This method is used for file uploads and forms with mixed content types.
+    /// Each part can contain text fields or binary file data.
+    ///
+    /// - Parameter parts: An array of multipart form data parts.
+    /// - Returns: The updated builder instance.
+    ///
+    /// Example:
+    /// ```swift
+    /// let imageData = UIImage(named: "photo")!.pngData()!
+    /// 
+    /// var builder = RequestBuilder(method: .post, url: uploadURL)
+    /// builder
+    ///     .multipartBody([
+    ///         MultipartFormData(name: "title", value: "My Photo"),
+    ///         MultipartFormData(
+    ///             name: "image",
+    ///             filename: "photo.png",
+    ///             data: imageData,
+    ///             mimeType: "image/png"
+    ///         )
+    ///     ])
+    ///     .build()
+    /// ```
+    @discardableResult
+    public mutating func multipartBody(_ parts: [MultipartFormData]) -> Self {
+        self.body = .multipart(parts)
+        return self
+    }
 
     /// Sets a custom timeout interval for the request.
     ///

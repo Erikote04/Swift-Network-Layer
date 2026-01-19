@@ -158,6 +158,41 @@ struct RequestBuilderTests {
         #expect(request.body?.contentType == "application/octet-stream")
     }
     
+    @Test("Builder sets multipart body correctly")
+    func builderSetsMultipartBody() {
+        var builder = RequestBuilder(
+            method: .post,
+            url: URL(string: "https://example.com/upload")!
+        )
+        
+        let imageData = Data([0xFF, 0xD8, 0xFF, 0xE0])
+        let parts = [
+            MultipartFormData(name: "title", value: "My Upload"),
+            MultipartFormData(
+                name: "image",
+                filename: "photo.jpg",
+                data: imageData,
+                mimeType: "image/jpeg"
+            )
+        ]
+        
+        let request = builder
+            .multipartBody(parts)
+            .build()
+        
+        #expect(request.body != nil)
+        #expect(request.body?.contentType == "multipart/form-data")
+        
+        if case .multipart(let requestParts) = request.body {
+            #expect(requestParts.count == 2)
+            #expect(requestParts[0].name == "title")
+            #expect(requestParts[1].name == "image")
+            #expect(requestParts[1].filename == "photo.jpg")
+        } else {
+            Issue.record("Expected multipart body")
+        }
+    }
+    
     @Test("Builder custom encoder is respected")
     func builderCustomEncoderRespected() {
         var builder = RequestBuilder(
@@ -179,5 +214,31 @@ struct RequestBuilderTests {
             let encoded = try? body.encoded()
             #expect(encoded != nil)
         }
+    }
+    
+    @Test("Builder supports all body types in sequence")
+    func builderSupportsAllBodyTypes() {
+        let url = URL(string: "https://example.com")!
+        
+        // Test JSON body
+        var jsonBuilder = RequestBuilder(method: .post, url: url)
+        let jsonRequest = jsonBuilder.jsonBody(["key": "value"]).build()
+        #expect(jsonRequest.body?.contentType == "application/json; charset=utf-8")
+        
+        // Test Form body
+        var formBuilder = RequestBuilder(method: .post, url: url)
+        let formRequest = formBuilder.formBody(["field": "value"]).build()
+        #expect(formRequest.body?.contentType == "application/x-www-form-urlencoded")
+        
+        // Test Data body
+        var dataBuilder = RequestBuilder(method: .post, url: url)
+        let dataRequest = dataBuilder.body(Data([0x01]), contentType: "application/custom").build()
+        #expect(dataRequest.body?.contentType == "application/custom")
+        
+        // Test Multipart body
+        var multipartBuilder = RequestBuilder(method: .post, url: url)
+        let parts = [MultipartFormData(name: "test", value: "data")]
+        let multipartRequest = multipartBuilder.multipartBody(parts).build()
+        #expect(multipartRequest.body?.contentType == "multipart/form-data")
     }
 }
