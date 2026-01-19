@@ -131,6 +131,7 @@ let user: User = try await client.get("/user")
 
 * ``Request``
 * ``RequestBuilder``
+* ``RequestBody``
 * ``Response``
 * ``HTTPMethod``
 * ``HTTPHeaders``

@@ -16,7 +16,7 @@ public struct RequestBuilder {
     private var method: HTTPMethod
     private var url: URL
     private var headers: HTTPHeaders = [:]
-    private var body: Data?
+    private var body: RequestBody?
     private var timeout: TimeInterval?
     private var cachePolicy: CachePolicy = .useCache
 
@@ -36,6 +36,7 @@ public struct RequestBuilder {
     ///   - name: The header name.
     ///   - value: The header value.
     /// - Returns: The updated builder instance.
+    @discardableResult
     public mutating func header(_ name: String, _ value: String) -> Self {
         headers[name] = value
         return self
@@ -45,6 +46,7 @@ public struct RequestBuilder {
     ///
     /// - Parameter headers: The headers to merge.
     /// - Returns: The updated builder instance.
+    @discardableResult
     public mutating func headers(_ headers: HTTPHeaders) -> Self {
         self.headers = self.headers.merging(headers)
         return self
@@ -52,10 +54,54 @@ public struct RequestBuilder {
 
     /// Sets the request body.
     ///
-    /// - Parameter data: The request body data.
+    /// - Parameter body: The request body.
     /// - Returns: The updated builder instance.
-    public mutating func body(_ data: Data?) -> Self {
-        self.body = data
+    @discardableResult
+    public mutating func body(_ body: RequestBody?) -> Self {
+        self.body = body
+        return self
+    }
+    
+    /// Sets the request body from raw data.
+    ///
+    /// This is a convenience method that wraps the data in a ``RequestBody/data(_:contentType:)`` case.
+    ///
+    /// - Parameters:
+    ///   - data: The raw request body data.
+    ///   - contentType: The MIME type of the data. Defaults to `application/octet-stream`.
+    /// - Returns: The updated builder instance.
+    @discardableResult
+    public mutating func body(_ data: Data?, contentType: String = "application/octet-stream") -> Self {
+        self.body = data.map { .data($0, contentType: contentType) }
+        return self
+    }
+    
+    /// Sets a JSON-encoded request body.
+    ///
+    /// The provided value will be JSON-encoded when the request is executed.
+    ///
+    /// - Parameters:
+    ///   - value: Any `Encodable` value to be JSON-encoded.
+    ///   - encoder: The `JSONEncoder` to use. Defaults to a new instance.
+    /// - Returns: The updated builder instance.
+    @discardableResult
+    public mutating func jsonBody<T: Encodable & Sendable>(
+        _ value: T,
+        encoder: JSONEncoder = JSONEncoder()
+    ) -> Self {
+        self.body = .json(value, encoder: encoder)
+        return self
+    }
+    
+    /// Sets a form-encoded request body.
+    ///
+    /// The fields will be encoded as `application/x-www-form-urlencoded`.
+    ///
+    /// - Parameter fields: A dictionary of field names and values.
+    /// - Returns: The updated builder instance.
+    @discardableResult
+    public mutating func formBody(_ fields: [String: String]) -> Self {
+        self.body = .form(fields)
         return self
     }
 
@@ -63,6 +109,7 @@ public struct RequestBuilder {
     ///
     /// - Parameter interval: The timeout interval.
     /// - Returns: The updated builder instance.
+    @discardableResult
     public mutating func timeout(_ interval: TimeInterval) -> Self {
         self.timeout = interval
         return self
@@ -72,6 +119,7 @@ public struct RequestBuilder {
     ///
     /// - Parameter policy: The cache policy to apply.
     /// - Returns: The updated builder instance.
+    @discardableResult
     public mutating func cachePolicy(_ policy: CachePolicy) -> Self {
         self.cachePolicy = policy
         return self

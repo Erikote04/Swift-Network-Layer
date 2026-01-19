@@ -28,9 +28,13 @@ public enum NetworkError: Error, Sendable {
     /// The response did not contain any body data when data was expected.
     case noData
 
-    /// Failed to decode the response body.
+    /// Failed to decode the response body or encode the request body.
     ///
-    /// - Parameter Error: The underlying decoding error.
+    /// This error is thrown in two scenarios:
+    /// - When decoding a response body fails (e.g., JSON parsing error)
+    /// - When encoding a request body fails (e.g., ``RequestBody/json(_:encoder:)`` encoding error)
+    ///
+    /// - Parameter Error: The underlying encoding or decoding error.
     case decodingError(Error)
 
     /// The server returned a non-successful HTTP status code.

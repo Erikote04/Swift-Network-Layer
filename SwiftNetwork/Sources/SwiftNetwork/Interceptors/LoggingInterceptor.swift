@@ -73,10 +73,20 @@ public struct LoggingInterceptor: Interceptor {
 
         guard level == .body else { return }
 
-        if let body = request.body,
-           let bodyString = String(data: body, encoding: .utf8) {
-            print("Body:")
-            print(bodyString)
+        if let body = request.body {
+            print("Body (\(body.contentType)):")
+            
+            // Try to encode and display the body
+            do {
+                let bodyData = try body.encoded()
+                if let bodyString = String(data: bodyData, encoding: .utf8) {
+                    print(bodyString)
+                } else {
+                    print("<binary data, \(bodyData.count) bytes>")
+                }
+            } catch {
+                print("<failed to encode body: \(error)>")
+            }
         }
     }
 

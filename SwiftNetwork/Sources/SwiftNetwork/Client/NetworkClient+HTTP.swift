@@ -37,18 +37,16 @@ public extension NetworkClient {
     ///   - body: The encodable request body.
     ///   - headers: Additional headers to include in the request.
     /// - Returns: A decoded response of type `T`.
-    func post<T: Decodable, Body: Encodable>(
+    func post<T: Decodable, Body: Encodable & Sendable>(
         _ path: String,
         body: Body,
         headers: HTTPHeaders = [:]
     ) async throws -> T {
-        let data = try JSONEncoder().encode(body)
-
         return try await request(
             method: .post,
             path: path,
             headers: headers,
-            body: data,
+            body: .json(body),
             cachePolicy: .reloadIgnoringCache
         )
     }
@@ -59,14 +57,14 @@ public extension NetworkClient {
     ///   - method: The HTTP method to use.
     ///   - path: The request path or URL string.
     ///   - headers: Headers to include in the request.
-    ///   - body: Optional request body data.
+    ///   - body: Optional request body.
     ///   - cachePolicy: Defines how caching should be applied.
     /// - Returns: A decoded response of type `T`.
     private func request<T: Decodable>(
         method: HTTPMethod,
         path: String,
         headers: HTTPHeaders,
-        body: Data?,
+        body: RequestBody?,
         cachePolicy: CachePolicy
     ) async throws -> T {
         let url = URL(string: path)!

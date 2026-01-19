@@ -56,13 +56,23 @@ final class URLSessionTransport: Transport {
     ///
     /// - Parameter request: The SwiftNetwork request to convert.
     /// - Returns: A configured `URLRequest`.
-    /// - Throws: An error if request construction fails.
+    /// - Throws: An error if request construction or body encoding fails.
     private func makeURLRequest(from request: Request) throws -> URLRequest {
         var urlRequest = URLRequest(url: request.url)
         urlRequest.httpMethod = request.method.rawValue
-        urlRequest.httpBody = request.body
         urlRequest.timeoutInterval = request.timeout ?? urlRequest.timeoutInterval
+        
+        // Encode the body if present
+        if let body = request.body {
+            urlRequest.httpBody = try body.encoded()
+            
+            // Set Content-Type header if not already provided
+            if request.headers["Content-Type"] == nil {
+                urlRequest.setValue(body.contentType, forHTTPHeaderField: "Content-Type")
+            }
+        }
 
+        // Apply all headers from the request
         for (key, value) in request.headers.all {
             urlRequest.setValue(value, forHTTPHeaderField: key)
         }

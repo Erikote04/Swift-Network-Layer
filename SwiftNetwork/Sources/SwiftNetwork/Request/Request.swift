@@ -23,7 +23,12 @@ public struct Request: Sendable {
     public let headers: HTTPHeaders
 
     /// The optional HTTP body of the request.
-    public let body: Data?
+    ///
+    /// When set, the body is encoded according to its type and the appropriate
+    /// Content-Type header is set automatically.
+    ///
+    /// - SeeAlso: ``RequestBody``
+    public let body: RequestBody?
 
     /// An optional timeout interval specific to this request.
     public let timeout: TimeInterval?
@@ -37,14 +42,15 @@ public struct Request: Sendable {
     ///   - method: The HTTP method to use.
     ///   - url: The URL the request is sent to.
     ///   - headers: Headers included in the request.
-    ///   - body: Optional request body data.
+    ///   - body: Optional request body. When provided, the body is encoded
+    ///     and the Content-Type header is set automatically.
     ///   - timeout: Optional timeout interval for the request.
     ///   - cachePolicy: Defines how caching should be applied.
     public init(
         method: HTTPMethod,
         url: URL,
         headers: HTTPHeaders = [:],
-        body: Data? = nil,
+        body: RequestBody? = nil,
         timeout: TimeInterval? = nil,
         cachePolicy: CachePolicy = .useCache
     ) {
@@ -52,6 +58,36 @@ public struct Request: Sendable {
         self.url = url
         self.headers = headers
         self.body = body
+        self.timeout = timeout
+        self.cachePolicy = cachePolicy
+    }
+    
+    /// Creates a new request with raw data as the body.
+    ///
+    /// This convenience initializer maintains backward compatibility with code
+    /// that passes `Data?` directly. The data is wrapped in a ``RequestBody/data(_:contentType:)``
+    /// case automatically.
+    ///
+    /// - Parameters:
+    ///   - method: The HTTP method to use.
+    ///   - url: The URL the request is sent to.
+    ///   - headers: Headers included in the request.
+    ///   - bodyData: Optional raw request body data.
+    ///   - timeout: Optional timeout interval for the request.
+    ///   - cachePolicy: Defines how caching should be applied.
+    @available(*, deprecated, message: "Use init(method:url:headers:body:timeout:cachePolicy:) with RequestBody instead")
+    public init(
+        method: HTTPMethod,
+        url: URL,
+        headers: HTTPHeaders = [:],
+        bodyData: Data?,
+        timeout: TimeInterval? = nil,
+        cachePolicy: CachePolicy = .useCache
+    ) {
+        self.method = method
+        self.url = url
+        self.headers = headers
+        self.body = bodyData.map { .data($0) }
         self.timeout = timeout
         self.cachePolicy = cachePolicy
     }
