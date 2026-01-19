@@ -64,11 +64,19 @@ final class URLSessionTransport: Transport {
         
         // Encode the body if present
         if let body = request.body {
-            urlRequest.httpBody = try body.encoded()
+            let (encodedData, boundary) = try body.encodedWithBoundary()
+            urlRequest.httpBody = encodedData
             
             // Set Content-Type header if not already provided
             if request.headers["Content-Type"] == nil {
-                urlRequest.setValue(body.contentType, forHTTPHeaderField: "Content-Type")
+                var contentType = body.contentType
+                
+                // For multipart, append the boundary
+                if let boundary = boundary {
+                    contentType += "; boundary=\(boundary)"
+                }
+                
+                urlRequest.setValue(contentType, forHTTPHeaderField: "Content-Type")
             }
         }
 

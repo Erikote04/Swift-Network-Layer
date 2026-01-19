@@ -31,12 +31,16 @@ actor AuthRefreshCoordinator {
         authenticate: @escaping @Sendable () async throws -> String?
     ) async throws -> String? {
 
+        // If there's already a refresh in progress, wait for it
         if let task = refreshTask {
             return try await task.value
         }
 
+        // Create and store the task BEFORE awaiting it
         let task = Task<String?, Error> {
-            defer { refreshTask = nil }
+            defer { 
+                Task { await clearRefreshTask() }
+            }
 
             guard let token = try await authenticate() else {
                 return nil
@@ -46,7 +50,17 @@ actor AuthRefreshCoordinator {
             return token
         }
 
+        // Store the task immediately to prevent other calls from creating a new one
         refreshTask = task
+        
+        // Now await the result
         return try await task.value
+    }
+    
+    /// Clears the current refresh task.
+    ///
+    /// This is called from the task's defer block to ensure proper cleanup.
+    private func clearRefreshTask() {
+        refreshTask = nil
     }
 }

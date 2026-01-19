@@ -18,6 +18,7 @@ import Foundation
 /// - **Raw Data**: Use `.data(_:)` for pre-encoded binary data
 /// - **JSON**: Use `.json(_:)` for Swift Codable types that should be JSON-encoded
 /// - **Form URL-Encoded**: Use `.form(_:)` for key-value pairs sent as `application/x-www-form-urlencoded`
+/// - **Multipart**: Use `.multipart(_:)` for file uploads and mixed content
 ///
 /// ## Example Usage
 ///
@@ -42,6 +43,13 @@ import Foundation
 /// // Raw data
 /// let imageData = Data()
 /// let dataBody = RequestBody.data(imageData)
+///
+/// // Multipart upload
+/// let parts = [
+///     MultipartFormData(name: "title", value: "My Photo"),
+///     MultipartFormData(name: "image", filename: "photo.png", data: imageData, mimeType: "image/png")
+/// ]
+/// let multipartBody = RequestBody.multipart(parts)
 /// ```
 ///
 /// ## Content-Type Headers
@@ -50,22 +58,10 @@ import Foundation
 /// - `.data(_:)` → `application/octet-stream` (default, can be overridden)
 /// - `.json(_:)` → `application/json; charset=utf-8`
 /// - `.form(_:)` → `application/x-www-form-urlencoded`
+/// - `.multipart(_:)` → `multipart/form-data; boundary=...`
 ///
 /// - Note: When using `.json(_:)`, encoding errors are deferred until request execution.
 ///   This allows request construction to succeed even if encoding might fail later.
-///
-/// ## Topics
-///
-/// ### Creating Request Bodies
-///
-/// - ``data(_:contentType:)``
-/// - ``json(_:encoder:)``
-/// - ``form(_:)``
-///
-/// ### Encoding
-///
-/// - ``encoded()``
-/// - ``contentType``
 @frozen
 public enum RequestBody: Sendable {
     
@@ -109,12 +105,41 @@ public enum RequestBody: Sendable {
     /// ```
     case form([String: String])
     
+    /// A multipart/form-data body.
+    ///
+    /// Used for file uploads and forms that contain mixed content types.
+    /// Each part can contain either text data or binary file data.
+    ///
+    /// The multipart encoding automatically:
+    /// - Generates a unique boundary
+    /// - Sets the correct Content-Type header
+    /// - Formats each part according to RFC 2388
+    ///
+    /// - Parameter parts: An array of multipart form data parts.
+    ///
+    /// Example:
+    /// ```swift
+    /// let imageData = UIImage(named: "photo")!.pngData()!
+    /// let parts = [
+    ///     MultipartFormData(name: "title", value: "My Photo"),
+    ///     MultipartFormData(
+    ///         name: "image",
+    ///         filename: "photo.png",
+    ///         data: imageData,
+    ///         mimeType: "image/png"
+    ///     )
+    /// ]
+    /// let body = RequestBody.multipart(parts)
+    /// ```
+    case multipart([MultipartFormData])
+    
     /// Encodes the body into `Data`.
     ///
     /// This method performs the actual encoding based on the body type:
     /// - `.data`: Returns the data as-is
     /// - `.json`: Encodes the value using the provided encoder
     /// - `.form`: Percent-encodes the fields into a query string
+    /// - `.multipart`: Encodes parts with boundaries according to RFC 2388
     ///
     /// - Returns: The encoded body data.
     /// - Throws: ``NetworkError/encodingError(_:)`` if encoding fails.
@@ -148,6 +173,55 @@ public enum RequestBody: Sendable {
             }
             
             return data
+            
+        case .multipart(let parts):
+            let boundary = MultipartFormData.generateBoundary()
+            var body = Data()
+            
+            // Encode each part
+            for part in parts {
+                body.append(part.encode(boundary: boundary))
+            }
+            
+            // Final boundary
+            if let finalBoundary = "--\(boundary)--\r\n".data(using: .utf8) {
+                body.append(finalBoundary)
+            }
+            
+            return body
+        }
+    }
+    
+    /// Encodes the body into `Data` and returns the boundary if applicable.
+    ///
+    /// For multipart bodies, this method returns both the encoded data and the boundary
+    /// string used in the encoding. For other body types, the boundary is nil.
+    ///
+    /// This method is used internally by the transport layer to ensure the same boundary
+    /// is used in both the body encoding and the Content-Type header.
+    ///
+    /// - Returns: A tuple containing the encoded data and an optional boundary string.
+    /// - Throws: ``NetworkError/encodingError(_:)`` if encoding fails.
+    func encodedWithBoundary() throws -> (data: Data, boundary: String?) {
+        switch self {
+        case .multipart(let parts):
+            let boundary = MultipartFormData.generateBoundary()
+            var body = Data()
+            
+            // Encode each part
+            for part in parts {
+                body.append(part.encode(boundary: boundary))
+            }
+            
+            // Final boundary
+            if let finalBoundary = "--\(boundary)--\r\n".data(using: .utf8) {
+                body.append(finalBoundary)
+            }
+            
+            return (body, boundary)
+            
+        default:
+            return (try encoded(), nil)
         }
     }
     
@@ -157,6 +231,10 @@ public enum RequestBody: Sendable {
     /// - `.data`: Returns the custom content type, or `application/octet-stream` by default
     /// - `.json`: Returns `application/json; charset=utf-8`
     /// - `.form`: Returns `application/x-www-form-urlencoded`
+    /// - `.multipart`: Returns `multipart/form-data` (the boundary is added by the transport)
+    ///
+    /// - Note: For multipart bodies, the boundary parameter is added by the transport layer
+    ///   when encoding to ensure consistency between the body and Content-Type header.
     public var contentType: String {
         switch self {
         case .data(_, let contentType):
@@ -165,6 +243,9 @@ public enum RequestBody: Sendable {
             return "application/json; charset=utf-8"
         case .form:
             return "application/x-www-form-urlencoded"
+        case .multipart:
+            // The boundary is added by the transport layer during encoding
+            return "multipart/form-data"
         }
     }
 }
