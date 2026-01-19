@@ -137,6 +137,12 @@ let user: User = try await client.get("/user")
 * ``HTTPMethod``
 * ``HTTPHeaders``
 
+### Calls
+
+* ``Call``
+* ``ProgressCall``
+* ``Progress``
+
 ### Interceptors
 
 * ``Interceptor``
