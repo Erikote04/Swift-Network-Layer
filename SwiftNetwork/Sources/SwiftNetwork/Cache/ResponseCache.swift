@@ -11,8 +11,8 @@ import Foundation
 ///
 /// `ResponseCache` stores successful GET responses and serves them
 /// when valid cached entries are available. Cache entries expire
-/// based on a configurable time-to-live (TTL).
-public actor ResponseCache {
+/// based on a configurable time-to-live (TTL) or Cache-Control directives.
+public actor ResponseCache: CacheStorage {
 
     private var storage: [URL: CacheEntry] = [:]
     private let ttl: TimeInterval
@@ -49,7 +49,7 @@ public actor ResponseCache {
     ///
     /// - Parameter request: The request to look up in the cache.
     /// - Returns: A `CacheEntry`, or `nil` if none is available.
-    func cachedEntry(for request: Request) -> CacheEntry? {
+    public func cachedEntry(for request: Request) -> CacheEntry? {
         guard request.method == .get else {
             return nil
         }
@@ -59,16 +59,26 @@ public actor ResponseCache {
 
     /// Stores a response in the cache.
     ///
-    /// Only responses for GET requests are cached.
+    /// Only responses for GET requests are cached, and only if they
+    /// don't have `no-store` directive.
     ///
     /// - Parameter response: The response to store.
     public func store(_ response: Response) {
         guard response.request.method == .get else { return }
+        
+        let entry = CacheEntry(response: response, timestamp: Date())
+        
+        // Don't store if no-store directive is present
+        guard !entry.shouldNotStore else { return }
 
-        storage[response.request.url] = CacheEntry(
-            response: response,
-            timestamp: Date()
-        )
+        storage[response.request.url] = entry
+    }
+    
+    /// Removes a cached entry for a request.
+    ///
+    /// - Parameter request: The request whose cached entry should be removed.
+    public func remove(for request: Request) {
+        storage.removeValue(forKey: request.url)
     }
 
     /// Determines whether a cache entry has expired.

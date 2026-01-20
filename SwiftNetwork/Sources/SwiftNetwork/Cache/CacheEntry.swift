@@ -12,7 +12,14 @@ import Foundation
 /// `CacheEntry` associates a `Response` with caching metadata including
 /// storage time, expiration, ETags, and last-modified dates for proper
 /// HTTP cache semantics.
-struct CacheEntry: Sendable {
+///
+/// The entry handles all standard Cache-Control directives including:
+/// - `max-age`: Freshness lifetime
+/// - `no-cache`: Requires revalidation before use
+/// - `no-store`: Must not be cached
+/// - `must-revalidate`: Must revalidate after expiration
+/// - `private`/`public`: Cache visibility control
+public struct CacheEntry: Sendable {
 
     /// The cached response.
     let response: Response
@@ -35,6 +42,9 @@ struct CacheEntry: Sendable {
     /// If `nil`, the entry doesn't have explicit expiration information.
     let expiresAt: Date?
     
+    /// The parsed Cache-Control directives from the response.
+    let cacheControl: CacheControlDirectives
+    
     /// Creates a cache entry from a response.
     ///
     /// Automatically extracts caching metadata from response headers.
@@ -47,7 +57,12 @@ struct CacheEntry: Sendable {
         self.timestamp = timestamp
         self.etag = response.headers["ETag"]
         self.lastModified = response.headers["Last-Modified"]
-        self.expiresAt = Self.calculateExpiration(from: response, timestamp: timestamp)
+        self.cacheControl = Self.parseCacheControl(from: response)
+        self.expiresAt = Self.calculateExpiration(
+            from: response,
+            timestamp: timestamp,
+            cacheControl: cacheControl
+        )
     }
     
     /// Checks if the cache entry is expired.
@@ -60,12 +75,55 @@ struct CacheEntry: Sendable {
         return Date() > expiresAt
     }
     
+    /// Indicates whether this entry must be revalidated before use.
+    ///
+    /// Returns `true` if:
+    /// - The `no-cache` directive is present
+    /// - The entry is expired and `must-revalidate` is set
+    var mustRevalidate: Bool {
+        if cacheControl.noCache {
+            return true
+        }
+        
+        if isExpired && cacheControl.mustRevalidate {
+            return true
+        }
+        
+        return false
+    }
+    
+    /// Indicates whether this response should never be cached.
+    ///
+    /// Returns `true` if the `no-store` directive is present.
+    var shouldNotStore: Bool {
+        cacheControl.noStore
+    }
+    
+    /// Indicates whether this entry is suitable for a shared cache.
+    ///
+    /// Returns `false` if the `private` directive is present.
+    var isPublic: Bool {
+        cacheControl.isPublic
+    }
+    
     /// The age of the cache entry in seconds.
     var age: TimeInterval {
         Date().timeIntervalSince(timestamp)
     }
     
     // MARK: - Private Helpers
+    
+    /// Parses Cache-Control directives from a response.
+    ///
+    /// - Parameter response: The response to parse.
+    /// - Returns: Parsed cache control directives.
+    private static func parseCacheControl(from response: Response) -> CacheControlDirectives {
+        guard let headerValue = response.headers["Cache-Control"] else {
+            return CacheControlDirectives()
+        }
+        
+        return CacheControlDirectives(headerValue: headerValue)
+    }
     
     /// Calculates the expiration date from response headers.
     ///
@@ -77,36 +135,22 @@ struct CacheEntry: Sendable {
     /// - Parameters:
     ///   - response: The response to extract headers from.
     ///   - timestamp: The time the response was received.
+    ///   - cacheControl: Parsed cache control directives.
     /// - Returns: The expiration date, or `nil` if no expiration is specified.
-    private static func calculateExpiration(from response: Response, timestamp: Date) -> Date? {
+    private static func calculateExpiration(
+        from response: Response,
+        timestamp: Date,
+        cacheControl: CacheControlDirectives
+    ) -> Date? {
         // Check Cache-Control: max-age
-        if let cacheControl = response.headers["Cache-Control"] {
-            if let maxAge = extractMaxAge(from: cacheControl) {
-                return timestamp.addingTimeInterval(TimeInterval(maxAge))
-            }
+        if let maxAge = cacheControl.maxAge {
+            return timestamp.addingTimeInterval(TimeInterval(maxAge))
         }
         
         // Check Expires header
         if let expiresString = response.headers["Expires"],
            let expiresDate = parseHTTPDate(expiresString) {
             return expiresDate
-        }
-        
-        return nil
-    }
-    
-    /// Extracts max-age value from Cache-Control header.
-    ///
-    /// - Parameter cacheControl: The Cache-Control header value.
-    /// - Returns: The max-age in seconds, or `nil` if not present.
-    private static func extractMaxAge(from cacheControl: String) -> Int? {
-        let directives = cacheControl.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
-        
-        for directive in directives {
-            if directive.lowercased().hasPrefix("max-age=") {
-                let value = directive.dropFirst("max-age=".count)
-                return Int(value)
-            }
         }
         
         return nil

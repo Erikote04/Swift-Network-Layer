@@ -13,21 +13,30 @@ import Foundation
 /// successful responses based on the request's cache policy. It supports
 /// advanced HTTP caching semantics including conditional requests,
 /// ETag validation, and Cache-Control directives.
+///
+/// ## Cache-Control Directive Handling
+///
+/// The interceptor respects all standard Cache-Control directives:
+/// - `no-store`: Response is never cached
+/// - `no-cache`: Cached response is always revalidated before use
+/// - `must-revalidate`: Stale responses must be revalidated
+/// - `max-age`: Defines freshness lifetime
+/// - `private`/`public`: Controls cache visibility (currently informational)
 public struct CacheInterceptor: Interceptor {
 
-    private let cache: ResponseCache
+    private let cache: any CacheStorage
 
     /// Creates a new cache interceptor.
     ///
-    /// - Parameter cache: The response cache used to store and retrieve responses.
-    public init(cache: ResponseCache) {
+    /// - Parameter cache: The cache storage used to store and retrieve responses.
+    public init(cache: any CacheStorage) {
         self.cache = cache
     }
 
     /// Intercepts a request to return cached responses or store new ones.
     ///
     /// Behavior varies by cache policy:
-    /// - `.useCache`: Return cached response if available
+    /// - `.useCache`: Return cached response if available and fresh
     /// - `.ignoreCache`: Always fetch from network
     /// - `.revalidate`: Conditional request with ETag/Last-Modified
     /// - `.respectHeaders`: Follow HTTP Cache-Control directives
@@ -83,7 +92,7 @@ public struct CacheInterceptor: Interceptor {
     ) async throws -> Response {
         let response = try await chain.proceed(request)
         
-        // Still cache successful responses for future use
+        // Still cache successful responses for future use (unless no-store)
         if (200..<300).contains(response.statusCode) {
             await cache.store(response)
         }
@@ -149,23 +158,21 @@ public struct CacheInterceptor: Interceptor {
         request: Request,
         chain: InterceptorChainProtocol
     ) async throws -> Response {
-        // Get cached entry to check expiration
+        // Get cached entry to check directives
         if let cachedEntry = await cache.cachedEntry(for: request) {
-            // Check Cache-Control directives
-            if let cacheControl = cachedEntry.response.headers["Cache-Control"] {
-                // no-store: Don't use cache at all
-                if cacheControl.contains("no-store") {
-                    let response = try await chain.proceed(request)
-                    return response // Don't cache either
-                }
-                
-                // no-cache: Revalidate before using
-                if cacheControl.contains("no-cache") {
-                    return try await handleRevalidate(request: request, chain: chain)
-                }
+            // Check if entry should never have been stored
+            if cachedEntry.shouldNotStore {
+                // Invalidate and fetch fresh
+                await cache.remove(for: request)
+                return try await fetchAndCacheIfAllowed(request: request, chain: chain)
             }
             
-            // Check if entry is expired
+            // Check if must revalidate (no-cache or expired + must-revalidate)
+            if cachedEntry.mustRevalidate {
+                return try await handleRevalidate(request: request, chain: chain)
+            }
+            
+            // Check if entry is still fresh
             if !cachedEntry.isExpired {
                 return cachedEntry.response
             }
@@ -175,15 +182,33 @@ public struct CacheInterceptor: Interceptor {
         }
         
         // No cache, fetch from network
+        return try await fetchAndCacheIfAllowed(request: request, chain: chain)
+    }
+    
+    /// Fetches from network and caches if allowed by directives.
+    ///
+    /// - Parameters:
+    ///   - request: The request to execute.
+    ///   - chain: The interceptor chain.
+    /// - Returns: The response from the network.
+    /// - Throws: Any error during execution.
+    private func fetchAndCacheIfAllowed(
+        request: Request,
+        chain: InterceptorChainProtocol
+    ) async throws -> Response {
         let response = try await chain.proceed(request)
         
-        // Check if response should be cached
+        // Parse Cache-Control to check if we should cache
         if let cacheControl = response.headers["Cache-Control"] {
-            if cacheControl.contains("no-store") {
-                return response // Don't cache
+            let directives = CacheControlDirectives(headerValue: cacheControl)
+            
+            if directives.noStore {
+                // Do not cache this response
+                return response
             }
         }
         
+        // Cache if successful
         if (200..<300).contains(response.statusCode) {
             await cache.store(response)
         }
