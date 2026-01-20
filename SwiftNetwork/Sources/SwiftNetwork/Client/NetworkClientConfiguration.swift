@@ -10,7 +10,7 @@ import Foundation
 /// Defines the global configuration applied to a `NetworkClient`.
 ///
 /// This includes base URL resolution, default headers, request timeout,
-/// and the interceptors applied to every request.
+/// interceptors, and security configuration such as certificate pinning.
 public struct NetworkClientConfiguration: Sendable {
 
     /// The base URL used to resolve relative request paths.
@@ -24,6 +24,12 @@ public struct NetworkClientConfiguration: Sendable {
 
     /// The interceptors applied to all requests created by the client.
     public let interceptors: [Interceptor]
+    
+    /// The certificate pinner used to validate server certificates.
+    ///
+    /// When set, all HTTPS requests will be validated against the configured pins.
+    /// If validation fails, the request will be rejected.
+    public let certificatePinner: CertificatePinner?
 
     /// Creates a new client configuration.
     ///
@@ -32,15 +38,18 @@ public struct NetworkClientConfiguration: Sendable {
     ///   - defaultHeaders: Headers added to every request.
     ///   - timeout: The default request timeout interval.
     ///   - interceptors: Interceptors applied to all requests.
+    ///   - certificatePinner: Optional certificate pinner for HTTPS requests.
     public init(
         baseURL: URL? = nil,
         defaultHeaders: HTTPHeaders = [:],
         timeout: TimeInterval = 60,
-        interceptors: [Interceptor] = []
+        interceptors: [Interceptor] = [],
+        certificatePinner: CertificatePinner? = nil
     ) {
         self.baseURL = baseURL
         self.defaultHeaders = defaultHeaders
         self.timeout = timeout
         self.interceptors = interceptors
+        self.certificatePinner = certificatePinner
     }
 }

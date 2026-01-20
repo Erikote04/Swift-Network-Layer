@@ -11,7 +11,7 @@ import Foundation
 ///
 /// `NetworkClient` is responsible for creating and executing network calls.
 /// It applies global configuration such as base URL resolution, default headers,
-/// interceptors, and transport selection.
+/// interceptors, certificate pinning, and transport selection.
 ///
 /// A single `NetworkClient` instance is intended to be reused across the
 /// application lifecycle.
@@ -39,14 +39,17 @@ public final class NetworkClient: NetworkClientProtocol {
     /// Creates a network client with a given configuration and URL session.
     ///
     /// - Parameters:
-    ///   - configuration: Defines base URL, default headers, timeout, and interceptors.
+    ///   - configuration: Defines base URL, default headers, timeout, interceptors, and pinning.
     ///   - session: The URLSession used by the underlying transport.
     public init(
         configuration: NetworkClientConfiguration = .init(),
         session: URLSession = .shared
     ) {
         self.configuration = configuration
-        self.transport = URLSessionTransport(session: session)
+        self.transport = URLSessionTransport(
+            session: session,
+            certificatePinner: configuration.certificatePinner
+        )
     }
 
     /// Creates a new executable network call for the given request.

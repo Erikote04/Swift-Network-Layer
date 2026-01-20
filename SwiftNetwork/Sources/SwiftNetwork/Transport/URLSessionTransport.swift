@@ -10,18 +10,38 @@ import Foundation
 /// A `Transport` implementation backed by `URLSession`.
 ///
 /// `URLSessionTransport` adapts SwiftNetwork requests to `URLSession`,
-/// handling request conversion, execution, response mapping, and optional
-/// progress reporting.
+/// handling request conversion, execution, response mapping, optional
+/// progress reporting, and certificate pinning.
 final class URLSessionTransport: Transport {
 
     private let session: URLSession
+    private let delegate: PinningURLSessionDelegate?
 
     /// Creates a new URLSession-based transport.
     ///
-    /// - Parameter session: The URLSession instance used to perform requests.
-    ///   Defaults to `URLSession.shared`.
-    init(session: URLSession = .shared) {
-        self.session = session
+    /// - Parameters:
+    ///   - session: The URLSession instance used to perform requests.
+    ///   - certificatePinner: Optional certificate pinner for HTTPS validation.
+    init(
+        session: URLSession = .shared,
+        certificatePinner: CertificatePinner? = nil
+    ) {
+        if let pinner = certificatePinner {
+            // Create delegate for pinning
+            let delegate = PinningURLSessionDelegate(pinner: pinner)
+            self.delegate = delegate
+            
+            // Create session with delegate
+            let configuration = session.configuration
+            self.session = URLSession(
+                configuration: configuration,
+                delegate: delegate,
+                delegateQueue: nil
+            )
+        } else {
+            self.session = session
+            self.delegate = nil
+        }
     }
 
     /// Executes a request using `URLSession`.
