@@ -19,8 +19,8 @@ public struct AuthCredentials: Sendable, Equatable {
     /// An optional refresh token used to obtain new access tokens.
     public let refreshToken: String?
     
-    /// Optional expiration time in seconds from issuance.
-    public let expiresIn: TimeInterval?
+    /// Optional token expiration information.
+    public let expiration: TokenExpiration?
     
     /// The provider that issued these credentials.
     public let provider: AuthProviderType
@@ -40,7 +40,25 @@ public struct AuthCredentials: Sendable, Equatable {
     ) {
         self.accessToken = accessToken
         self.refreshToken = refreshToken
-        self.expiresIn = expiresIn
+        self.expiration = expiresIn.map { TokenExpiration(expiresIn: $0) }
         self.provider = provider
+    }
+    
+    /// Whether the access token has expired.
+    ///
+    /// - Parameter date: The reference date (defaults to now).
+    /// - Returns: `true` if the token has expired, or `false` if no expiration info is available.
+    public func isExpired(at date: Date = Date()) -> Bool {
+        expiration?.isExpired(at: date) ?? false
+    }
+    
+    /// Whether the access token is expiring soon.
+    ///
+    /// - Parameters:
+    ///   - threshold: How many seconds before expiration to consider "soon" (default: 300).
+    ///   - date: The reference date (defaults to now).
+    /// - Returns: `true` if the token expires within the threshold.
+    public func isExpiringSoon(threshold: TimeInterval = 300, at date: Date = Date()) -> Bool {
+        expiration?.isExpiringSoon(threshold: threshold, at: date) ?? false
     }
 }

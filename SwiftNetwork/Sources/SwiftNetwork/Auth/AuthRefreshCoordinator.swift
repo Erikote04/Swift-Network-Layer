@@ -12,9 +12,14 @@ import Foundation
 /// `AuthRefreshCoordinator` ensures that only a single token refresh
 /// operation is performed at a time, even when multiple requests
 /// simultaneously encounter authentication failures.
-actor AuthRefreshCoordinator {
+public actor AuthRefreshCoordinator {
 
     private var refreshTask: Task<String?, Error>? = nil
+    private var lastRefreshTime: Date?
+    private let minRefreshInterval: TimeInterval = 0.1 // 100ms debounce
+    
+    /// Creates a new refresh coordinator.
+    public init() {}
 
     /// Performs a token refresh operation if needed.
     ///
@@ -26,7 +31,7 @@ actor AuthRefreshCoordinator {
     ///   - authenticate: A closure responsible for performing authentication and returning a new token.
     /// - Returns: The refreshed token, or `nil` if refresh fails.
     /// - Throws: An error if authentication fails.
-    func refreshIfNeeded(
+    public func refreshIfNeeded(
         tokenStore: TokenStore,
         authenticate: @escaping @Sendable () async throws -> String?
     ) async throws -> String? {
@@ -35,32 +40,40 @@ actor AuthRefreshCoordinator {
         if let task = refreshTask {
             return try await task.value
         }
+        
+        // Debounce: if we just refreshed recently, return current token
+        if let lastRefresh = lastRefreshTime,
+           Date().timeIntervalSince(lastRefresh) < minRefreshInterval {
+            return await tokenStore.currentToken()
+        }
 
         // Create and store the task BEFORE awaiting it
         let task = Task<String?, Error> {
-            defer { 
-                Task { await clearRefreshTask() }
+            let token = try await authenticate()
+            
+            if let token = token {
+                await tokenStore.updateToken(token)
             }
-
-            guard let token = try await authenticate() else {
-                return nil
-            }
-
-            await tokenStore.updateToken(token)
+            
             return token
         }
 
         // Store the task immediately to prevent other calls from creating a new one
         refreshTask = task
         
-        // Now await the result
-        return try await task.value
-    }
-    
-    /// Clears the current refresh task.
-    ///
-    /// This is called from the task's defer block to ensure proper cleanup.
-    private func clearRefreshTask() {
+        // Await the result
+        let result: String?
+        do {
+            result = try await task.value
+            lastRefreshTime = Date()
+        } catch {
+            refreshTask = nil
+            throw error
+        }
+        
+        // Clear the task after completion
         refreshTask = nil
+        
+        return result
     }
 }

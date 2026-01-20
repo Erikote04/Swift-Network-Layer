@@ -23,7 +23,7 @@ struct AuthProviderTests {
         
         #expect(credentials.accessToken == "test_access")
         #expect(credentials.refreshToken == "test_refresh")
-        #expect(credentials.expiresIn == 3600)
+        #expect(credentials.expiration?.expiresIn == 3600)
         #expect(credentials.provider == .google)
     }
     
@@ -36,7 +36,7 @@ struct AuthProviderTests {
         
         #expect(credentials.accessToken == "token")
         #expect(credentials.refreshToken == nil)
-        #expect(credentials.expiresIn == nil)
+        #expect(credentials.expiration == nil)
         #expect(credentials.provider == .apple)
     }
     

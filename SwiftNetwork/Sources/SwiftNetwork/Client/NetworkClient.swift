@@ -76,12 +76,16 @@ public final class NetworkClient: NetworkClientProtocol {
     /// - Returns: The list of interceptors to be applied to the call.
     private func resolvedInterceptors() -> [Interceptor] {
         configuration.interceptors.map { interceptor in
+            // Inject coordinator for legacy AuthInterceptor (with authenticator)
             if let authInterceptor = interceptor as? AuthInterceptor {
-                return AuthInterceptor(
-                    tokenStore: authInterceptor.tokenStore,
-                    authenticator: authInterceptor.authenticator,
-                    coordinator: authCoordinator
-                )
+                // Only recreate if it has an authenticator (legacy path)
+                if authInterceptor.authenticator != nil {
+                    return AuthInterceptor(
+                        tokenStore: authInterceptor.tokenStore,
+                        authenticator: authInterceptor.authenticator,
+                        coordinator: authCoordinator
+                    )
+                }
             }
 
             return interceptor
