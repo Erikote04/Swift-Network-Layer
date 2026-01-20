@@ -64,11 +64,10 @@ public final class GoogleAuthProvider: NSObject, AuthProvider, Sendable {
         
         #if os(iOS) && canImport(AuthenticationServices)
         let authCode = try await presentAuthenticationSession(url: authURL)
+        return try await exchangeCodeForToken(code: authCode, codeVerifier: codeVerifier)
         #else
         throw AuthError.unsupportedPlatform
         #endif
-        
-        return try await exchangeCodeForToken(code: authCode, codeVerifier: codeVerifier)
     }
     
     // MARK: - PKCE Helpers
