@@ -5,6 +5,7 @@
 //  Created by Erik Sebastian de Erice Jerez on 20/1/26.
 //
 
+import Foundation
 
 /// Represents parsed Cache-Control header directives.
 ///
