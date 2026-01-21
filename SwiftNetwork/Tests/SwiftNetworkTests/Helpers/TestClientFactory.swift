@@ -12,11 +12,18 @@ enum TestClientFactory {
 
     static func make(
         transport: Transport,
-        interceptors: [Interceptor] = []
+        interceptors: [Interceptor] = [],
+        prioritizedInterceptors: [PrioritizedInterceptor] = []
     ) -> NetworkClient {
-        NetworkClient(
+        let sortedPrioritized = prioritizedInterceptors
+            .sorted()
+            .map { $0.interceptor }
+        
+        let allInterceptors = sortedPrioritized + interceptors
+        
+        return NetworkClient(
             transport: transport,
-            interceptors: interceptors
+            interceptors: allInterceptors
         )
     }
 }

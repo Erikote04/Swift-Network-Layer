@@ -10,7 +10,8 @@ import Foundation
 /// Defines the global configuration applied to a `NetworkClient`.
 ///
 /// This includes base URL resolution, default headers, request timeout,
-/// interceptors, and security configuration such as certificate pinning.
+/// interceptors with optional prioritization, and security configuration
+/// such as certificate pinning.
 public struct NetworkClientConfiguration: Sendable {
 
     /// The base URL used to resolve relative request paths.
@@ -23,7 +24,16 @@ public struct NetworkClientConfiguration: Sendable {
     public let timeout: TimeInterval
 
     /// The interceptors applied to all requests created by the client.
+    ///
+    /// Interceptors are executed in the order they appear in this array.
+    /// Use `prioritizedInterceptors` for priority-based ordering.
     public let interceptors: [Interceptor]
+    
+    /// Prioritized interceptors applied to all requests.
+    ///
+    /// These interceptors are sorted by priority before execution,
+    /// with higher priority values executing first.
+    public let prioritizedInterceptors: [PrioritizedInterceptor]
     
     /// The certificate pinner used to validate server certificates.
     ///
@@ -38,18 +48,21 @@ public struct NetworkClientConfiguration: Sendable {
     ///   - defaultHeaders: Headers added to every request.
     ///   - timeout: The default request timeout interval.
     ///   - interceptors: Interceptors applied to all requests.
+    ///   - prioritizedInterceptors: Priority-based interceptors.
     ///   - certificatePinner: Optional certificate pinner for HTTPS requests.
     public init(
         baseURL: URL? = nil,
         defaultHeaders: HTTPHeaders = [:],
         timeout: TimeInterval = 60,
         interceptors: [Interceptor] = [],
+        prioritizedInterceptors: [PrioritizedInterceptor] = [],
         certificatePinner: CertificatePinner? = nil
     ) {
         self.baseURL = baseURL
         self.defaultHeaders = defaultHeaders
         self.timeout = timeout
         self.interceptors = interceptors
+        self.prioritizedInterceptors = prioritizedInterceptors
         self.certificatePinner = certificatePinner
     }
 }

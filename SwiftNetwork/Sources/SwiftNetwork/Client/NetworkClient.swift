@@ -11,7 +11,7 @@ import Foundation
 ///
 /// `NetworkClient` is responsible for creating and executing network calls.
 /// It applies global configuration such as base URL resolution, default headers,
-/// interceptors, certificate pinning, and transport selection.
+/// interceptors with priority support, certificate pinning, and transport selection.
 ///
 /// A single `NetworkClient` instance is intended to be reused across the
 /// application lifecycle.
@@ -70,12 +70,19 @@ public final class NetworkClient: NetworkClientProtocol {
 
     /// Resolves interceptors for a call, injecting shared coordination when required.
     ///
-    /// This is primarily used to ensure that authentication interceptors
-    /// share the same refresh coordination context.
+    /// This merges regular interceptors with prioritized ones, sorting by priority
+    /// and ensuring proper authentication coordination.
     ///
     /// - Returns: The list of interceptors to be applied to the call.
     private func resolvedInterceptors() -> [Interceptor] {
-        configuration.interceptors.map { interceptor in
+        // Combine regular and prioritized interceptors
+        let prioritized = configuration.prioritizedInterceptors
+            .sorted()
+            .map { $0.interceptor }
+        
+        let allInterceptors = prioritized + configuration.interceptors
+        
+        return allInterceptors.map { interceptor in
             // Inject coordinator for legacy AuthInterceptor (with authenticator)
             if let authInterceptor = interceptor as? AuthInterceptor {
                 // Only recreate if it has an authenticator (legacy path)
