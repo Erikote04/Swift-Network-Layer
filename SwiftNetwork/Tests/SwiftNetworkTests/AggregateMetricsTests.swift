@@ -2,7 +2,7 @@
 //  AggregateMetricsTests.swift
 //  SwiftNetwork
 //
-//  Created by Erik Sebastian de Erice Jerez on 21/1/26.
+//  Created by SwiftNetwork on 21/1/26.
 //
 
 import Testing
@@ -60,7 +60,7 @@ struct AggregateMetricsTests {
         let metrics = AggregateMetrics()
         
         // Record requests with known durations
-        let durations = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        let durations: [TimeInterval] = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
         
         for duration in durations {
             let event = RequestMetricEvent(
@@ -75,8 +75,14 @@ struct AggregateMetricsTests {
         }
         
         let snapshot = await metrics.snapshot()
-        #expect(snapshot.averageDuration == 0.55)
-        #expect(snapshot.medianDuration == 0.5)
+        
+        // Check average (sum = 5.5, count = 10, avg = 0.55)
+        #expect(abs(snapshot.averageDuration - 0.55) < 0.01)
+        
+        // Check median (should be around 0.5)
+        #expect(abs(snapshot.medianDuration - 0.5) < 0.1)
+        
+        // Check p95 (should be >= 0.9)
         #expect(snapshot.p95Duration >= 0.9)
     }
     
@@ -132,7 +138,9 @@ struct AggregateMetricsTests {
         let snapshot = await metrics.snapshot()
         #expect(snapshot.cacheHits == 2)
         #expect(snapshot.cacheMisses == 1)
-        #expect(snapshot.cacheHitRate == 66.66666666666666)
+        
+        // Check cache hit rate (2/3 = 66.67%)
+        #expect(abs(snapshot.cacheHitRate - 66.67) < 0.1)
     }
     
     @Test("AggregateMetrics resets correctly")

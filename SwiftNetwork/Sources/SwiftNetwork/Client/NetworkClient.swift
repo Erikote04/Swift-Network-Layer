@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  NetworkClient.swift
 //  SwiftNetwork
 //
 //  Created by Erik Sebastian de Erice Jerez on 18/12/25.
@@ -115,7 +115,7 @@ public final class NetworkClient: NetworkClientProtocol {
     /// Resolves a request by applying global configuration.
     ///
     /// This includes base URL resolution, default headers merging,
-    /// and timeout resolution.
+    /// timeout resolution, and cache policy preservation.
     ///
     /// - Parameter request: The original request.
     /// - Returns: A fully resolved request ready for execution.
@@ -138,7 +138,8 @@ public final class NetworkClient: NetworkClientProtocol {
             url: finalURL,
             headers: headers,
             body: request.body,
-            timeout: timeout
+            timeout: timeout,
+            cachePolicy: request.cachePolicy
         )
     }
 }

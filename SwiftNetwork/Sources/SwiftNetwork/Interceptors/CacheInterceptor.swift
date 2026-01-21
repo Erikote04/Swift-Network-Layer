@@ -14,6 +14,9 @@ import Foundation
 /// advanced HTTP caching semantics including conditional requests,
 /// ETag validation, and Cache-Control directives.
 ///
+/// When a metrics collector is provided, cache hits, misses, and revalidations
+/// are recorded for observability.
+///
 /// ## Cache-Control Directive Handling
 ///
 /// The interceptor respects all standard Cache-Control directives:
@@ -25,12 +28,19 @@ import Foundation
 public struct CacheInterceptor: Interceptor {
 
     private let cache: any CacheStorage
+    private let metrics: NetworkMetrics?
 
     /// Creates a new cache interceptor.
     ///
-    /// - Parameter cache: The cache storage used to store and retrieve responses.
-    public init(cache: any CacheStorage) {
+    /// - Parameters:
+    ///   - cache: The cache storage used to store and retrieve responses.
+    ///   - metrics: Optional metrics collector for recording cache operations.
+    public init(
+        cache: any CacheStorage,
+        metrics: NetworkMetrics? = nil
+    ) {
         self.cache = cache
+        self.metrics = metrics
     }
 
     /// Intercepts a request to return cached responses or store new ones.
@@ -72,8 +82,11 @@ public struct CacheInterceptor: Interceptor {
     ) async throws -> Response {
         // Try to get cached response
         if let cached = await cache.cachedResponse(for: request) {
+            await recordCacheHit(request: request, result: .hit)
             return cached
         }
+        
+        await recordCacheHit(request: request, result: .miss)
         
         // Fetch from network and cache
         let response = try await chain.proceed(request)
@@ -90,6 +103,8 @@ public struct CacheInterceptor: Interceptor {
         request: Request,
         chain: InterceptorChainProtocol
     ) async throws -> Response {
+        await recordCacheHit(request: request, result: .miss)
+        
         let response = try await chain.proceed(request)
         
         // Still cache successful responses for future use (unless no-store)
@@ -107,6 +122,8 @@ public struct CacheInterceptor: Interceptor {
     ) async throws -> Response {
         // Get cached entry (not just response, need metadata)
         guard let cachedEntry = await cache.cachedEntry(for: request) else {
+            await recordCacheHit(request: request, result: .miss)
+            
             // No cache, fetch normally
             let response = try await chain.proceed(request)
             
@@ -142,8 +159,11 @@ public struct CacheInterceptor: Interceptor {
         
         // If 304 Not Modified, return cached response
         if response.statusCode == 304 {
+            await recordCacheHit(request: request, result: .revalidated)
             return cachedEntry.response
         }
+        
+        await recordCacheHit(request: request, result: .miss)
         
         // Otherwise, cache new response
         if (200..<300).contains(response.statusCode) {
@@ -174,6 +194,7 @@ public struct CacheInterceptor: Interceptor {
             
             // Check if entry is still fresh
             if !cachedEntry.isExpired {
+                await recordCacheHit(request: request, result: .hit)
                 return cachedEntry.response
             }
             
@@ -196,6 +217,8 @@ public struct CacheInterceptor: Interceptor {
         request: Request,
         chain: InterceptorChainProtocol
     ) async throws -> Response {
+        await recordCacheHit(request: request, result: .miss)
+        
         let response = try await chain.proceed(request)
         
         // Parse Cache-Control to check if we should cache
@@ -214,5 +237,26 @@ public struct CacheInterceptor: Interceptor {
         }
         
         return response
+    }
+    
+    /// Records a cache operation to the metrics collector.
+    ///
+    /// - Parameters:
+    ///   - request: The request being processed.
+    ///   - result: The cache operation result.
+    private func recordCacheHit(
+        request: Request,
+        result: CacheMetricEvent.CacheResult
+    ) async {
+        guard let metrics = metrics else { return }
+        
+        let event = CacheMetricEvent(
+            method: request.method,
+            url: request.url,
+            result: result,
+            timestamp: Date()
+        )
+        
+        await metrics.recordCacheHit(event)
     }
 }
