@@ -10,8 +10,8 @@ import Foundation
 /// Defines the global configuration applied to a `NetworkClient`.
 ///
 /// This includes base URL resolution, default headers, request timeout,
-/// interceptors with optional prioritization, and security configuration
-/// such as certificate pinning.
+/// interceptors with optional prioritization and request/response separation,
+/// and security configuration such as certificate pinning.
 public struct NetworkClientConfiguration: Sendable {
 
     /// The base URL used to resolve relative request paths.
@@ -35,6 +35,16 @@ public struct NetworkClientConfiguration: Sendable {
     /// with higher priority values executing first.
     public let prioritizedInterceptors: [PrioritizedInterceptor]
     
+    /// Request-only interceptors that modify outgoing requests.
+    ///
+    /// These execute before the request is sent to the transport.
+    public let requestInterceptors: [RequestInterceptor]
+    
+    /// Response-only interceptors that process incoming responses.
+    ///
+    /// These execute after the transport returns a response.
+    public let responseInterceptors: [ResponseInterceptor]
+    
     /// The certificate pinner used to validate server certificates.
     ///
     /// When set, all HTTPS requests will be validated against the configured pins.
@@ -49,6 +59,8 @@ public struct NetworkClientConfiguration: Sendable {
     ///   - timeout: The default request timeout interval.
     ///   - interceptors: Interceptors applied to all requests.
     ///   - prioritizedInterceptors: Priority-based interceptors.
+    ///   - requestInterceptors: Request-only interceptors.
+    ///   - responseInterceptors: Response-only interceptors.
     ///   - certificatePinner: Optional certificate pinner for HTTPS requests.
     public init(
         baseURL: URL? = nil,
@@ -56,6 +68,8 @@ public struct NetworkClientConfiguration: Sendable {
         timeout: TimeInterval = 60,
         interceptors: [Interceptor] = [],
         prioritizedInterceptors: [PrioritizedInterceptor] = [],
+        requestInterceptors: [RequestInterceptor] = [],
+        responseInterceptors: [ResponseInterceptor] = [],
         certificatePinner: CertificatePinner? = nil
     ) {
         self.baseURL = baseURL
@@ -63,6 +77,8 @@ public struct NetworkClientConfiguration: Sendable {
         self.timeout = timeout
         self.interceptors = interceptors
         self.prioritizedInterceptors = prioritizedInterceptors
+        self.requestInterceptors = requestInterceptors
+        self.responseInterceptors = responseInterceptors
         self.certificatePinner = certificatePinner
     }
 }

@@ -13,13 +13,25 @@ enum TestClientFactory {
     static func make(
         transport: Transport,
         interceptors: [Interceptor] = [],
-        prioritizedInterceptors: [PrioritizedInterceptor] = []
+        prioritizedInterceptors: [PrioritizedInterceptor] = [],
+        requestInterceptors: [RequestInterceptor] = [],
+        responseInterceptors: [ResponseInterceptor] = []
     ) -> NetworkClient {
+        // Sort prioritized interceptors and extract them
         let sortedPrioritized = prioritizedInterceptors
             .sorted()
             .map { $0.interceptor }
         
-        let allInterceptors = sortedPrioritized + interceptors
+        // Adapt request-only interceptors
+        let requestAdapted = requestInterceptors
+            .map { RequestResponseInterceptorAdapter(requestInterceptor: $0) }
+        
+        // Adapt response-only interceptors
+        let responseAdapted = responseInterceptors
+            .map { RequestResponseInterceptorAdapter(responseInterceptor: $0) }
+        
+        // Combine: prioritized → request → regular → response
+        let allInterceptors = sortedPrioritized + requestAdapted + interceptors + responseAdapted
         
         return NetworkClient(
             transport: transport,

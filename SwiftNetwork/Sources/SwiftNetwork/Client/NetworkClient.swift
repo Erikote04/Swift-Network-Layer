@@ -11,7 +11,8 @@ import Foundation
 ///
 /// `NetworkClient` is responsible for creating and executing network calls.
 /// It applies global configuration such as base URL resolution, default headers,
-/// interceptors with priority support, certificate pinning, and transport selection.
+/// interceptors with priority and request/response separation support,
+/// certificate pinning, and transport selection.
 ///
 /// A single `NetworkClient` instance is intended to be reused across the
 /// application lifecycle.
@@ -70,17 +71,29 @@ public final class NetworkClient: NetworkClientProtocol {
 
     /// Resolves interceptors for a call, injecting shared coordination when required.
     ///
-    /// This merges regular interceptors with prioritized ones, sorting by priority
-    /// and ensuring proper authentication coordination.
+    /// This merges regular, prioritized, request-only, and response-only interceptors,
+    /// sorting by priority and ensuring proper authentication coordination.
     ///
     /// - Returns: The list of interceptors to be applied to the call.
     private func resolvedInterceptors() -> [Interceptor] {
-        // Combine regular and prioritized interceptors
+        // 1. Prioritized interceptors (sorted by priority)
         let prioritized = configuration.prioritizedInterceptors
             .sorted()
             .map { $0.interceptor }
         
-        let allInterceptors = prioritized + configuration.interceptors
+        // 2. Request-only interceptors (adapted to full Interceptor)
+        let requestAdapted = configuration.requestInterceptors
+            .map { RequestResponseInterceptorAdapter(requestInterceptor: $0) }
+        
+        // 3. Regular interceptors (as-is)
+        let regular = configuration.interceptors
+        
+        // 4. Response-only interceptors (adapted to full Interceptor)
+        let responseAdapted = configuration.responseInterceptors
+            .map { RequestResponseInterceptorAdapter(responseInterceptor: $0) }
+        
+        // Combine: prioritized → request → regular → response
+        let allInterceptors = prioritized + requestAdapted + regular + responseAdapted
         
         return allInterceptors.map { interceptor in
             // Inject coordinator for legacy AuthInterceptor (with authenticator)
