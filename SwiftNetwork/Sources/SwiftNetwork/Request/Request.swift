@@ -10,7 +10,7 @@ import Foundation
 /// An immutable representation of an HTTP request.
 ///
 /// `Request` contains all the information required to perform a network call,
-/// including method, URL, headers, body, timeout, and cache behavior.
+/// including method, URL, headers, body, timeout, cache behavior, and priority.
 public struct Request: Sendable {
 
     /// The HTTP method of the request.
@@ -35,6 +35,12 @@ public struct Request: Sendable {
 
     /// The cache policy applied to this request.
     public let cachePolicy: CachePolicy
+    
+    /// The priority of this request.
+    ///
+    /// Higher priority requests may be scheduled ahead of lower priority ones.
+    /// Defaults to `.normal`.
+    public let priority: RequestPriority
 
     /// Creates a new request.
     ///
@@ -46,13 +52,15 @@ public struct Request: Sendable {
     ///     and the Content-Type header is set automatically.
     ///   - timeout: Optional timeout interval for the request.
     ///   - cachePolicy: Defines how caching should be applied.
+    ///   - priority: The execution priority of the request.
     public init(
         method: HTTPMethod,
         url: URL,
         headers: HTTPHeaders = [:],
         body: RequestBody? = nil,
         timeout: TimeInterval? = nil,
-        cachePolicy: CachePolicy = .useCache
+        cachePolicy: CachePolicy = .useCache,
+        priority: RequestPriority = .normal
     ) {
         self.method = method
         self.url = url
@@ -60,6 +68,7 @@ public struct Request: Sendable {
         self.body = body
         self.timeout = timeout
         self.cachePolicy = cachePolicy
+        self.priority = priority
     }
     
     /// Creates a new request with raw data as the body.
@@ -75,14 +84,16 @@ public struct Request: Sendable {
     ///   - bodyData: Optional raw request body data.
     ///   - timeout: Optional timeout interval for the request.
     ///   - cachePolicy: Defines how caching should be applied.
-    @available(*, deprecated, message: "Use init(method:url:headers:body:timeout:cachePolicy:) with RequestBody instead")
+    ///   - priority: The execution priority of the request.
+    @available(*, deprecated, message: "Use init(method:url:headers:body:timeout:cachePolicy:priority:) with RequestBody instead")
     public init(
         method: HTTPMethod,
         url: URL,
         headers: HTTPHeaders = [:],
         bodyData: Data?,
         timeout: TimeInterval? = nil,
-        cachePolicy: CachePolicy = .useCache
+        cachePolicy: CachePolicy = .useCache,
+        priority: RequestPriority = .normal
     ) {
         self.method = method
         self.url = url
@@ -90,5 +101,6 @@ public struct Request: Sendable {
         self.body = bodyData.map { .data($0) }
         self.timeout = timeout
         self.cachePolicy = cachePolicy
+        self.priority = priority
     }
 }

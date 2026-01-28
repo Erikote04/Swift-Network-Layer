@@ -9,10 +9,14 @@ import Testing
 import Foundation
 
 actor CallCounter {
-    private var count = 0
+    private(set) var count = 0
     
     func increment() -> Int {
         count += 1
         return count
+    }
+    
+    func reset() {
+        count = 0
     }
 }

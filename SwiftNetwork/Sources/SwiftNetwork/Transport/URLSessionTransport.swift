@@ -11,7 +11,7 @@ import Foundation
 ///
 /// `URLSessionTransport` adapts SwiftNetwork requests to `URLSession`,
 /// handling request conversion, execution, response mapping, optional
-/// progress reporting, and certificate pinning.
+/// progress reporting, certificate pinning, and request prioritization.
 final class URLSessionTransport: Transport {
 
     private let session: URLSession
@@ -74,7 +74,29 @@ final class URLSessionTransport: Transport {
                 return try await executeWithProgress(urlRequest, request: request, progress: progressHandler)
             }
             
-            // Otherwise, use the simpler data task API
+            // Otherwise, use the simpler data task API with priority support
+            return try await executeWithPriority(urlRequest, request: request)
+        } catch is CancellationError {
+            throw NetworkError.cancelled
+        } catch let error as NetworkError {
+            throw error
+        } catch {
+            throw NetworkError.transportError(error)
+        }
+    }
+    
+    /// Executes a request with priority scheduling.
+    ///
+    /// - Parameters:
+    ///   - urlRequest: The URLRequest to execute.
+    ///   - request: The original SwiftNetwork request.
+    /// - Returns: A `Response` containing the server response.
+    /// - Throws: A `NetworkError` if execution fails.
+    private func executeWithPriority(
+        _ urlRequest: URLRequest,
+        request: Request
+    ) async throws -> Response {
+        try await withTaskPriority(request.priority.swiftTaskPriority) { [session] in
             let (data, response) = try await session.data(for: urlRequest)
 
             guard let httpResponse = response as? HTTPURLResponse else {
@@ -87,12 +109,6 @@ final class URLSessionTransport: Transport {
                 headers: HTTPHeaders(httpResponse.allHeaderFields as? [String: String] ?? [:]),
                 body: data
             )
-        } catch is CancellationError {
-            throw NetworkError.cancelled
-        } catch let error as NetworkError {
-            throw error
-        } catch {
-            throw NetworkError.transportError(error)
         }
     }
     
@@ -104,51 +120,54 @@ final class URLSessionTransport: Transport {
     func stream(_ request: Request) async throws -> StreamingResponse {
         let urlRequest = try makeURLRequest(from: request)
         
-        // Use bytes(for:) API which returns AsyncSequence
-        let (bytes, response) = try await session.bytes(for: urlRequest)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
-        }
-        
-        // Convert AsyncSequence<UInt8> to AsyncThrowingStream<Data>
-        let stream = AsyncThrowingStream<Data, Error> { continuation in
-            Task {
-                do {
-                    var buffer = Data()
-                    buffer.reserveCapacity(8192) // 8KB buffer
-                    
-                    for try await byte in bytes {
-                        buffer.append(byte)
+        // Execute with proper priority
+        return try await withTaskPriority(request.priority.swiftTaskPriority) { [session] in
+            // Use bytes(for:) API which returns AsyncSequence
+            let (bytes, response) = try await session.bytes(for: urlRequest)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NetworkError.invalidResponse
+            }
+            
+            // Convert AsyncSequence<UInt8> to AsyncThrowingStream<Data>
+            let stream = AsyncThrowingStream<Data, Error> { continuation in
+                Task {
+                    do {
+                        var buffer = Data()
+                        buffer.reserveCapacity(8192) // 8KB buffer
                         
-                        // Yield chunks of ~8KB
-                        if buffer.count >= 8192 {
-                            continuation.yield(buffer)
-                            buffer = Data()
-                            buffer.reserveCapacity(8192)
+                        for try await byte in bytes {
+                            buffer.append(byte)
+                            
+                            // Yield chunks of ~8KB
+                            if buffer.count >= 8192 {
+                                continuation.yield(buffer)
+                                buffer = Data()
+                                buffer.reserveCapacity(8192)
+                            }
                         }
+                        
+                        // Yield remaining data
+                        if !buffer.isEmpty {
+                            continuation.yield(buffer)
+                        }
+                        
+                        continuation.finish()
+                    } catch is CancellationError {
+                        continuation.finish(throwing: NetworkError.cancelled)
+                    } catch {
+                        continuation.finish(throwing: NetworkError.transportError(error))
                     }
-                    
-                    // Yield remaining data
-                    if !buffer.isEmpty {
-                        continuation.yield(buffer)
-                    }
-                    
-                    continuation.finish()
-                } catch is CancellationError {
-                    continuation.finish(throwing: NetworkError.cancelled)
-                } catch {
-                    continuation.finish(throwing: NetworkError.transportError(error))
                 }
             }
+            
+            return StreamingResponse(
+                request: request,
+                statusCode: httpResponse.statusCode,
+                headers: HTTPHeaders(httpResponse.allHeaderFields as? [String: String] ?? [:]),
+                stream: stream
+            )
         }
-        
-        return StreamingResponse(
-            request: request,
-            statusCode: httpResponse.statusCode,
-            headers: HTTPHeaders(httpResponse.allHeaderFields as? [String: String] ?? [:]),
-            stream: stream
-        )
     }
     
     /// Executes a request with progress tracking using URLSessionDelegate.
@@ -164,29 +183,31 @@ final class URLSessionTransport: Transport {
         request: Request,
         progress: @escaping @Sendable (Progress) -> Void
     ) async throws -> Response {
-        let delegate = ProgressDelegate(progressHandler: progress)
-        let delegateSession = URLSession(
-            configuration: session.configuration,
-            delegate: delegate,
-            delegateQueue: nil
-        )
-        
-        defer {
-            delegateSession.finishTasksAndInvalidate()
+        try await withTaskPriority(request.priority.swiftTaskPriority) { [session] in
+            let delegate = ProgressDelegate(progressHandler: progress)
+            let delegateSession = URLSession(
+                configuration: session.configuration,
+                delegate: delegate,
+                delegateQueue: nil
+            )
+            
+            defer {
+                delegateSession.finishTasksAndInvalidate()
+            }
+            
+            let (data, response) = try await delegateSession.data(for: urlRequest)
+            
+            guard let httpResponse = response as? HTTPURLResponse else {
+                throw NetworkError.invalidResponse
+            }
+            
+            return Response(
+                request: request,
+                statusCode: httpResponse.statusCode,
+                headers: HTTPHeaders(httpResponse.allHeaderFields as? [String: String] ?? [:]),
+                body: data
+            )
         }
-        
-        let (data, response) = try await delegateSession.data(for: urlRequest)
-        
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw NetworkError.invalidResponse
-        }
-        
-        return Response(
-            request: request,
-            statusCode: httpResponse.statusCode,
-            headers: HTTPHeaders(httpResponse.allHeaderFields as? [String: String] ?? [:]),
-            body: data
-        )
     }
 
     /// Converts a `Request` into a `URLRequest`.
