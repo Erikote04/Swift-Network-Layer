@@ -11,7 +11,8 @@ import Foundation
 ///
 /// This includes base URL resolution, default headers, request timeout,
 /// interceptors with optional prioritization and request/response separation,
-/// and security configuration such as certificate pinning.
+/// security configuration such as certificate pinning, and performance
+/// optimizations like request deduplication.
 public struct NetworkClientConfiguration: Sendable {
 
     /// The base URL used to resolve relative request paths.
@@ -50,6 +51,14 @@ public struct NetworkClientConfiguration: Sendable {
     /// When set, all HTTPS requests will be validated against the configured pins.
     /// If validation fails, the request will be rejected.
     public let certificatePinner: CertificatePinner?
+    
+    /// Enables request deduplication for identical in-flight requests.
+    ///
+    /// When enabled, multiple identical requests made concurrently will share
+    /// a single network call, reducing bandwidth and server load.
+    ///
+    /// Defaults to `false` for backward compatibility.
+    public let enableDeduplication: Bool
 
     /// Creates a new client configuration.
     ///
@@ -62,6 +71,7 @@ public struct NetworkClientConfiguration: Sendable {
     ///   - requestInterceptors: Request-only interceptors.
     ///   - responseInterceptors: Response-only interceptors.
     ///   - certificatePinner: Optional certificate pinner for HTTPS requests.
+    ///   - enableDeduplication: Enables request deduplication for identical in-flight requests.
     public init(
         baseURL: URL? = nil,
         defaultHeaders: HTTPHeaders = [:],
@@ -70,7 +80,8 @@ public struct NetworkClientConfiguration: Sendable {
         prioritizedInterceptors: [PrioritizedInterceptor] = [],
         requestInterceptors: [RequestInterceptor] = [],
         responseInterceptors: [ResponseInterceptor] = [],
-        certificatePinner: CertificatePinner? = nil
+        certificatePinner: CertificatePinner? = nil,
+        enableDeduplication: Bool = false
     ) {
         self.baseURL = baseURL
         self.defaultHeaders = defaultHeaders
@@ -80,5 +91,6 @@ public struct NetworkClientConfiguration: Sendable {
         self.requestInterceptors = requestInterceptors
         self.responseInterceptors = responseInterceptors
         self.certificatePinner = certificatePinner
+        self.enableDeduplication = enableDeduplication
     }
 }

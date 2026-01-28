@@ -96,18 +96,3 @@ private extension RequestBody {
         }
     }
 }
-
-/// Wrapper to encode any Encodable within the private extension
-private struct AnyEncodableWrapper: Encodable {
-    private let _encode: (Encoder) throws -> Void
-    
-    init(_ encodable: any Encodable & Sendable) {
-        self._encode = { encoder in
-            try encodable.encode(to: encoder)
-        }
-    }
-    
-    func encode(to encoder: Encoder) throws {
-        try _encode(encoder)
-    }
-}

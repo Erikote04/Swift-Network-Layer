@@ -12,7 +12,7 @@ import Foundation
 /// `NetworkClient` is responsible for creating and executing network calls.
 /// It applies global configuration such as base URL resolution, default headers,
 /// interceptors with priority and request/response separation support,
-/// certificate pinning, and transport selection.
+/// certificate pinning, request deduplication, and transport selection.
 ///
 /// A single `NetworkClient` instance is intended to be reused across the
 /// application lifecycle.
@@ -21,6 +21,7 @@ public final class NetworkClient: NetworkClientProtocol {
     private let configuration: NetworkClientConfiguration
     private let transport: Transport
     private let authCoordinator = AuthRefreshCoordinator()
+    private let deduplicator: RequestDeduplicator?
 
     /// Creates a network client using a custom transport and a set of interceptors.
     ///
@@ -35,6 +36,7 @@ public final class NetworkClient: NetworkClientProtocol {
     ) {
         self.configuration = NetworkClientConfiguration(interceptors: interceptors)
         self.transport = transport
+        self.deduplicator = nil
     }
 
     /// Creates a network client with a given configuration and URL session.
@@ -51,6 +53,7 @@ public final class NetworkClient: NetworkClientProtocol {
             session: session,
             certificatePinner: configuration.certificatePinner
         )
+        self.deduplicator = configuration.enableDeduplication ? RequestDeduplicator() : nil
     }
 
     /// Creates a new executable network call for the given request.
@@ -62,11 +65,21 @@ public final class NetworkClient: NetworkClientProtocol {
     public func newCall(_ request: Request) -> Call {
         let resolvedRequest = resolve(request)
 
-        return InterceptorCall(
+        let baseCall = InterceptorCall(
             request: resolvedRequest,
             interceptors: resolvedInterceptors(),
             transport: transport
         )
+        
+        // Wrap with deduplication if enabled
+        if let deduplicator = deduplicator {
+            return DeduplicatedCall(
+                baseCall: baseCall,
+                deduplicator: deduplicator
+            )
+        }
+        
+        return baseCall
     }
 
     /// Resolves interceptors for a call, injecting shared coordination when required.
@@ -139,7 +152,8 @@ public final class NetworkClient: NetworkClientProtocol {
             headers: headers,
             body: request.body,
             timeout: timeout,
-            cachePolicy: request.cachePolicy
+            cachePolicy: request.cachePolicy,
+            priority: request.priority
         )
     }
 }
