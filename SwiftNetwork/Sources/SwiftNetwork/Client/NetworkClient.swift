@@ -17,12 +17,12 @@ import Foundation
 /// A single `NetworkClient` instance is intended to be reused across the
 /// application lifecycle.
 public final class NetworkClient: NetworkClientProtocol {
-
+    
     private let configuration: NetworkClientConfiguration
     private let transport: Transport
     private let authCoordinator = AuthRefreshCoordinator()
     private let deduplicator: RequestDeduplicator?
-
+    
     /// Creates a network client using a custom transport and a set of interceptors.
     ///
     /// This initializer is intended for internal usage and testing.
@@ -38,7 +38,7 @@ public final class NetworkClient: NetworkClientProtocol {
         self.transport = transport
         self.deduplicator = nil
     }
-
+    
     /// Creates a network client with a given configuration and URL session.
     ///
     /// - Parameters:
@@ -55,7 +55,7 @@ public final class NetworkClient: NetworkClientProtocol {
         )
         self.deduplicator = configuration.enableDeduplication ? RequestDeduplicator() : nil
     }
-
+    
     /// Creates a new executable network call for the given request.
     ///
     /// The request is resolved against the client configuration before execution.
@@ -64,7 +64,7 @@ public final class NetworkClient: NetworkClientProtocol {
     /// - Returns: A `Call` representing the executable request.
     public func newCall(_ request: Request) -> Call {
         let resolvedRequest = resolve(request)
-
+        
         let baseCall = InterceptorCall(
             request: resolvedRequest,
             interceptors: resolvedInterceptors(),
@@ -81,7 +81,7 @@ public final class NetworkClient: NetworkClientProtocol {
         
         return baseCall
     }
-
+    
     /// Resolves interceptors for a call, injecting shared coordination when required.
     ///
     /// This merges regular, prioritized, request-only, and response-only interceptors,
@@ -120,11 +120,11 @@ public final class NetworkClient: NetworkClientProtocol {
                     )
                 }
             }
-
+            
             return interceptor
         }
     }
-
+    
     /// Resolves a request by applying global configuration.
     ///
     /// This includes base URL resolution, default headers merging,
@@ -134,18 +134,18 @@ public final class NetworkClient: NetworkClientProtocol {
     /// - Returns: A fully resolved request ready for execution.
     private func resolve(_ request: Request) -> Request {
         var finalURL = request.url
-
+        
         if let baseURL = configuration.baseURL,
            request.url.host == nil {
             finalURL = baseURL.appendingPathComponent(request.url.path)
         }
-
+        
         let headers = configuration
             .defaultHeaders
             .merging(request.headers)
-
+        
         let timeout = request.timeout ?? configuration.timeout
-
+        
         return Request(
             method: request.method,
             url: finalURL,
@@ -155,5 +155,123 @@ public final class NetworkClient: NetworkClientProtocol {
             cachePolicy: request.cachePolicy,
             priority: request.priority
         )
+    }
+    
+    // MARK: - WebSocket Support
+    
+    /// Creates a new WebSocket call for the given request.
+    ///
+    /// WebSocket calls establish a persistent bidirectional connection
+    /// for real-time communication. Unlike standard HTTP calls, WebSocket
+    /// calls maintain an open connection after establishment.
+    ///
+    /// ## URL Resolution
+    ///
+    /// If the request URL is relative (no host), it will be resolved
+    /// against the client's base URL. The scheme is automatically converted:
+    /// - `http://` → `ws://`
+    /// - `https://` → `wss://`
+    ///
+    /// ## Authentication
+    ///
+    /// If an `AuthInterceptor` is configured, the WebSocket call will
+    /// automatically include authentication tokens in the connection headers.
+    ///
+    /// - Parameter request: The WebSocket connection request.
+    /// - Returns: A `WebSocketCall` that can be used to establish the connection.
+    public func newWebSocketCall(_ request: Request) -> WebSocketCall {
+        let resolvedRequest = resolveWebSocketRequest(request)
+        
+        return BaseWebSocketCall(
+            request: resolvedRequest,
+            session: extractSession(),
+            tokenStore: extractTokenStore()
+        )
+    }
+    
+    // MARK: - WebSocket Private Helpers
+    
+    /// Resolves a WebSocket request against the client configuration.
+    ///
+    /// - Parameter request: The original request.
+    /// - Returns: A resolved request with WebSocket URL scheme.
+    private func resolveWebSocketRequest(_ request: Request) -> Request {
+        var finalURL = request.url
+        
+        // Resolve against base URL if needed
+        if let baseURL = configuration.baseURL,
+           request.url.host == nil {
+            finalURL = baseURL.appendingPathComponent(request.url.path)
+        }
+        
+        // Convert HTTP scheme to WebSocket scheme
+        if let scheme = finalURL.scheme {
+            let wsScheme: String
+            switch scheme.lowercased() {
+            case "http":
+                wsScheme = "ws"
+            case "https":
+                wsScheme = "wss"
+            default:
+                wsScheme = scheme  // Already ws/wss or custom
+            }
+            
+            var components = URLComponents(url: finalURL, resolvingAgainstBaseURL: false)
+            components?.scheme = wsScheme
+            
+            if let newURL = components?.url {
+                finalURL = newURL
+            }
+        }
+        
+        // Merge headers (but not body - WebSocket upgrade is handled by URLSession)
+        let headers = configuration
+            .defaultHeaders
+            .merging(request.headers)
+        
+        return Request(
+            method: request.method,
+            url: finalURL,
+            headers: headers,
+            body: nil,  // WebSocket connections don't have a body
+            timeout: request.timeout ?? configuration.timeout,
+            cachePolicy: .ignoreCache,  // WebSockets don't use cache
+            priority: request.priority
+        )
+    }
+    
+    /// Extracts the URLSession from the transport or creates a default one.
+    ///
+    /// - Returns: A URLSession instance for WebSocket connections.
+    private func extractSession() -> URLSession {
+        // Try to extract session from URLSessionTransport
+        if let urlSessionTransport = transport as? URLSessionTransport {
+            // For now, return shared since URLSessionTransport doesn't expose its session
+            // This can be enhanced later if needed
+            return .shared
+        }
+        
+        return .shared
+    }
+    
+    /// Extracts the token store from configured interceptors.
+    ///
+    /// - Returns: The token store if an AuthInterceptor is configured.
+    private func extractTokenStore() -> TokenStore? {
+        // Check prioritized interceptors
+        for prioritized in configuration.prioritizedInterceptors {
+            if let authInterceptor = prioritized.interceptor as? AuthInterceptor {
+                return authInterceptor.tokenStore
+            }
+        }
+        
+        // Check regular interceptors
+        for interceptor in configuration.interceptors {
+            if let authInterceptor = interceptor as? AuthInterceptor {
+                return authInterceptor.tokenStore
+            }
+        }
+        
+        return nil
     }
 }
