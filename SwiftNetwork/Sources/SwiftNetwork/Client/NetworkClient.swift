@@ -176,16 +176,20 @@ public final class NetworkClient: NetworkClientProtocol {
     ///
     /// If an `AuthInterceptor` is configured, the WebSocket call will
     /// automatically include authentication tokens in the connection headers.
+    /// If the interceptor uses an `AuthManager`, token refresh during
+    /// reconnection is automatically handled.
     ///
     /// - Parameter request: The WebSocket connection request.
     /// - Returns: A `WebSocketCall` that can be used to establish the connection.
     public func newWebSocketCall(_ request: Request) -> WebSocketCall {
         let resolvedRequest = resolveWebSocketRequest(request)
+        let (tokenStore, authManager) = extractAuth()
         
         return BaseWebSocketCall(
             request: resolvedRequest,
             session: extractSession(),
-            tokenStore: extractTokenStore()
+            tokenStore: tokenStore,
+            authManager: authManager
         )
     }
     
@@ -254,24 +258,24 @@ public final class NetworkClient: NetworkClientProtocol {
         return .shared
     }
     
-    /// Extracts the token store from configured interceptors.
+    /// Extracts authentication components from configured interceptors.
     ///
-    /// - Returns: The token store if an AuthInterceptor is configured.
-    private func extractTokenStore() -> TokenStore? {
+    /// - Returns: A tuple of (TokenStore?, AuthManager?) if auth is configured.
+    private func extractAuth() -> (TokenStore?, AuthManager?) {
         // Check prioritized interceptors
         for prioritized in configuration.prioritizedInterceptors {
             if let authInterceptor = prioritized.interceptor as? AuthInterceptor {
-                return authInterceptor.tokenStore
+                return (authInterceptor.tokenStore, nil)  // Legacy doesn't expose AuthManager
             }
         }
         
         // Check regular interceptors
         for interceptor in configuration.interceptors {
             if let authInterceptor = interceptor as? AuthInterceptor {
-                return authInterceptor.tokenStore
+                return (authInterceptor.tokenStore, nil)
             }
         }
         
-        return nil
+        return (nil, nil)
     }
 }

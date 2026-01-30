@@ -47,6 +47,11 @@ public actor WebSocketTransport {
     /// Auth token to use on reconnect.
     private var authToken: String?
     
+    // MARK: - Auth Support
+    
+    /// Callback to retrieve a fresh auth token when reconnecting.
+    private var authTokenProvider: (@Sendable () async -> String?)?
+    
     // MARK: - Initialization
     
     /// Creates a new WebSocket transport.
@@ -97,6 +102,27 @@ public actor WebSocketTransport {
         
         self.isConnected = true
         self.reconnectAttempts = 0
+    }
+    
+    /// Sets a callback to retrieve fresh auth tokens during reconnection.
+    ///
+    /// When auto-reconnect is enabled and the connection is lost, this
+    /// callback will be invoked to obtain a potentially refreshed token
+    /// before attempting to reconnect.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let transport = WebSocketTransport(url: wsURL)
+    /// transport.setAuthTokenProvider {
+    ///     await authManager.currentCredentials?.accessToken
+    /// }
+    /// transport.enableAutoReconnect()
+    /// ```
+    ///
+    /// - Parameter provider: A closure that returns the current auth token.
+    public func setAuthTokenProvider(_ provider: @escaping @Sendable () async -> String?) {
+        self.authTokenProvider = provider
     }
     
     /// Closes the WebSocket connection gracefully.
@@ -277,8 +303,11 @@ public actor WebSocketTransport {
         // Wait before reconnecting
         try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
         
-        // Attempt reconnection
-        try? await connect(authToken: authToken)
+        // Get fresh token if provider is available
+        let freshToken = await authTokenProvider?()
+        
+        // Attempt reconnection with fresh token
+        try? await connect(authToken: freshToken ?? authToken)
     }
     
     // MARK: - State

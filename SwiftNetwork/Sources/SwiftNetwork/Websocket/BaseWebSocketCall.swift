@@ -20,6 +20,7 @@ import Foundation
 /// - Applies authentication headers automatically
 /// - Supports cancellation
 /// - Provides connection state tracking
+/// - Integrates with `AuthManager` for automatic token refresh during reconnection
 public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     
     // MARK: - Properties
@@ -32,6 +33,9 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     
     /// Optional token store for authentication.
     private let tokenStore: TokenStore?
+    
+    /// Optional auth manager for token refresh during reconnection.
+    private let authManager: AuthManager?
     
     /// The active WebSocket transport, if connected.
     private var transport: WebSocketTransport?
@@ -47,14 +51,17 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     ///   - request: The WebSocket connection request.
     ///   - session: The URLSession to use for the connection.
     ///   - tokenStore: Optional token store for authentication.
+    ///   - authManager: Optional auth manager for token refresh.
     public init(
         request: Request,
         session: URLSession = .shared,
-        tokenStore: TokenStore? = nil
+        tokenStore: TokenStore? = nil,
+        authManager: AuthManager? = nil
     ) {
         self.request = request
         self.session = session
         self.tokenStore = tokenStore
+        self.authManager = authManager
     }
     
     // MARK: - WebSocketCall
@@ -65,7 +72,8 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     /// 1. Checks for cancellation
     /// 2. Retrieves authentication token if available
     /// 3. Creates a WebSocket transport
-    /// 4. Initiates the connection
+    /// 4. Sets up auth token provider for reconnection
+    /// 5. Initiates the connection
     ///
     /// - Returns: A connected `WebSocketTransport`.
     /// - Throws: `NetworkError.cancelled` if the call was cancelled,
@@ -76,14 +84,30 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
             throw NetworkError.cancelled
         }
         
-        // Get auth token if available
-        let authToken = await tokenStore?.currentToken()
+        // Get auth token - prefer authManager over tokenStore
+        let authToken: String?
+        if let manager = authManager {
+            authToken = await manager.currentCredentials?.accessToken
+        } else {
+            authToken = await tokenStore?.currentToken()
+        }
         
         // Create transport
         let wsTransport = WebSocketTransport(
             url: request.url,
             session: session
         )
+        
+        // Set up auth token provider for reconnection if we have an auth manager
+        if let manager = authManager {
+            await wsTransport.setAuthTokenProvider {
+                await manager.currentCredentials?.accessToken
+            }
+        } else if let store = tokenStore {
+            await wsTransport.setAuthTokenProvider {
+                await store.currentToken()
+            }
+        }
         
         // Store reference
         self.transport = wsTransport
