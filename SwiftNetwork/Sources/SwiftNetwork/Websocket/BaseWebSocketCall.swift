@@ -21,7 +21,7 @@ import Foundation
 /// - Supports cancellation
 /// - Provides connection state tracking
 /// - Integrates with `AuthManager` for automatic token refresh during reconnection
-public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
+public final class BaseWebSocketCall: WebSocketCall {
     
     // MARK: - Properties
     
@@ -38,10 +38,10 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     private let authManager: AuthManager?
     
     /// The active WebSocket transport, if connected.
-    private var transport: WebSocketTransport?
+    private let transportState = ManagedCriticalState<WebSocketTransport?>(nil)
     
     /// Cancellation state.
-    private let cancelled = Locked<Bool>(false)
+    private let cancelledState = ManagedCriticalState(false)
     
     // MARK: - Initialization
     
@@ -110,7 +110,7 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
         }
         
         // Store reference
-        self.transport = wsTransport
+        transportState.withCriticalRegion { $0 = wsTransport }
         
         // Check cancellation before connecting
         guard !isCancelled else {
@@ -129,10 +129,11 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     ///
     /// If a connection is active, it will be closed gracefully.
     public func cancel() {
-        cancelled.withLock { $0 = true }
+        cancelledState.withCriticalRegion { $0 = true }
         
+        let currentTransport = transportState.withCriticalRegion { $0 }
         Task {
-            await transport?.close(
+            await currentTransport?.close(
                 code: .goingAway,
                 reason: "Call cancelled"
             )
@@ -141,24 +142,6 @@ public final class BaseWebSocketCall: WebSocketCall, @unchecked Sendable {
     
     /// Indicates whether the call has been cancelled.
     public var isCancelled: Bool {
-        cancelled.withLock { $0 }
-    }
-}
-
-// MARK: - Locked (Thread-safe wrapper)
-
-/// A thread-safe wrapper for mutable state.
-private final class Locked<T>: @unchecked Sendable {
-    private var value: T
-    private let lock = NSLock()
-    
-    init(_ value: T) {
-        self.value = value
-    }
-    
-    func withLock<R>(_ body: (inout T) -> R) -> R {
-        lock.lock()
-        defer { lock.unlock() }
-        return body(&value)
+        cancelledState.withCriticalRegion { $0 }
     }
 }

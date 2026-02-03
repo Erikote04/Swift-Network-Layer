@@ -12,7 +12,10 @@ import Foundation
 /// `URLSessionTransport` adapts SwiftNetwork requests to `URLSession`,
 /// handling request conversion, execution, response mapping, optional
 /// progress reporting, certificate pinning, and request prioritization.
-final class URLSessionTransport: Transport {
+///
+/// - Safety: `URLSessionTransport` is actor-isolated, ensuring access to its
+///   mutable state is serialized by the actor runtime.
+actor URLSessionTransport: Transport {
 
     private let session: URLSession
     private let delegate: PinningURLSessionDelegate?

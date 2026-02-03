@@ -12,7 +12,7 @@ import Foundation
 ///
 /// `AuthInterceptor` can work standalone or integrate with `AuthManager`
 /// for automatic token refresh and expiration handling.
-public final class AuthInterceptor: Interceptor, @unchecked Sendable {
+public final class AuthInterceptor: Interceptor, Sendable {
     
     public let tokenStore: TokenStore
     public let authenticator: Authenticator?

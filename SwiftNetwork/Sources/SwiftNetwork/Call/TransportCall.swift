@@ -12,7 +12,7 @@ import Foundation
 /// `TransportCall` bypasses interceptors and executes the request
 /// directly using the provided `Transport`. It supports progress reporting
 /// and streaming for uploads and downloads when the transport is `URLSessionTransport`.
-final class TransportCall: BaseCall, ProgressCall, StreamingCall, @unchecked Sendable {
+final class TransportCall: BaseCall, ProgressCall, StreamingCall {
 
     private let transport: Transport
 

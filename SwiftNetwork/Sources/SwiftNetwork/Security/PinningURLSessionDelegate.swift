@@ -15,7 +15,7 @@ import Foundation
 ///
 /// This delegate is used internally by `URLSessionTransport` when certificate
 /// pinning is enabled.
-final class PinningURLSessionDelegate: NSObject, URLSessionDelegate, @unchecked Sendable {
+final class PinningURLSessionDelegate: NSObject, URLSessionDelegate {
     
     private let pinner: CertificatePinner
     

@@ -12,7 +12,7 @@ import Foundation
 /// `InterceptorCall` composes multiple `Interceptor` instances and
 /// ultimately delegates the request execution to a `Transport`. It supports
 /// progress reporting and streaming when the underlying transport supports them.
-final class InterceptorCall: BaseCall, ProgressCall, StreamingCall, @unchecked Sendable {
+final class InterceptorCall: BaseCall, ProgressCall, StreamingCall {
 
     private let interceptors: [Interceptor]
     private let transport: Transport
@@ -127,27 +127,23 @@ final class InterceptorCall: BaseCall, ProgressCall, StreamingCall, @unchecked S
     
     // MARK: - Private Helpers (duplicated from BaseCall)
     
-    private let stateLock = NSLock()
-    private var state: CallState = .idle
+    private let state = ManagedCriticalState<CallState>(.idle)
     
     private func beginExecution() throws {
-        stateLock.lock()
-        defer { stateLock.unlock() }
+        state.withCriticalRegion { currentState in
+            guard currentState == .idle else {
+                fatalError("Call can only be executed once")
+            }
 
-        guard state == .idle else {
-            fatalError("Call can only be executed once")
+            currentState = .running
         }
-
-        state = .running
     }
 
     private func finishExecution() {
-        stateLock.lock()
-        
-        if state != .cancelled {
-            state = .completed
+        state.withCriticalRegion { currentState in
+            if currentState != .cancelled {
+                currentState = .completed
+            }
         }
-        
-        stateLock.unlock()
     }
 }

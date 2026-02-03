@@ -75,33 +75,11 @@ public actor WebSocketConnectionMonitor {
         healthCallback = onHealthChange
         lastPongTime = Date()
         
-        monitorTask = Task {
-            while !Task.isCancelled && isRunning {
-                // Wait for the ping interval
-                try? await Task.sleep(nanoseconds: UInt64(pingInterval * 1_000_000_000))
-                
-                guard !Task.isCancelled && isRunning else { break }
-                
-                // Send ping
-                do {
-                    try await sendPing()
-                } catch {
-                    // Ping failed - connection might be dead
-                    await onHealthChange(false)
-                    break
-                }
-                
-                // Wait for pong timeout
-                try? await Task.sleep(nanoseconds: UInt64(pongTimeout * 1_000_000_000))
-                
-                // Check if pong was received
-                if let lastPong = lastPongTime,
-                   Date().timeIntervalSince(lastPong) > pongTimeout + pingInterval {
-                    // No pong received - connection is unhealthy
-                    await onHealthChange(false)
-                    break
-                }
-            }
+        monitorTask = Task { [weak self] in
+            await self?.monitorLoop(
+                sendPing: sendPing,
+                onHealthChange: onHealthChange
+            )
         }
     }
     
@@ -122,5 +100,39 @@ public actor WebSocketConnectionMonitor {
     /// Whether the monitor is currently running.
     public var running: Bool {
         isRunning
+    }
+
+    // MARK: - Private
+    
+    private func monitorLoop(
+        sendPing: @escaping @Sendable () async throws -> Void,
+        onHealthChange: @escaping @Sendable (Bool) async -> Void
+    ) async {
+        while !Task.isCancelled && isRunning {
+            // Wait for the ping interval
+            try? await Task.sleep(nanoseconds: UInt64(pingInterval * 1_000_000_000))
+            
+            guard !Task.isCancelled && isRunning else { break }
+            
+            // Send ping
+            do {
+                try await sendPing()
+            } catch {
+                // Ping failed - connection might be dead
+                await onHealthChange(false)
+                break
+            }
+            
+            // Wait for pong timeout
+            try? await Task.sleep(nanoseconds: UInt64(pongTimeout * 1_000_000_000))
+            
+            // Check if pong was received
+            if let lastPong = lastPongTime,
+               Date().timeIntervalSince(lastPong) > pongTimeout + pingInterval {
+                // No pong received - connection is unhealthy
+                await onHealthChange(false)
+                break
+            }
+        }
     }
 }

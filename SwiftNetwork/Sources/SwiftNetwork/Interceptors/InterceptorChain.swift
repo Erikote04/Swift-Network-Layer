@@ -11,12 +11,12 @@ import Foundation
 ///
 /// `InterceptorChain` is responsible for invoking interceptors sequentially
 /// and eventually delegating execution to the terminal handler.
-final class InterceptorChain: InterceptorChainProtocol, @unchecked Sendable {
+struct InterceptorChain: InterceptorChainProtocol {
 
     private let interceptors: [Interceptor]
     private let index: Int
     let request: Request
-    private let terminalHandler: (Request) async throws -> Response
+    private let terminalHandler: @Sendable (Request) async throws -> Response
 
     /// Creates a new interceptor chain.
     ///
@@ -29,7 +29,7 @@ final class InterceptorChain: InterceptorChainProtocol, @unchecked Sendable {
         interceptors: [Interceptor],
         index: Int,
         request: Request,
-        terminalHandler: @escaping (Request) async throws -> Response
+        terminalHandler: @escaping @Sendable (Request) async throws -> Response
     ) {
         self.interceptors = interceptors
         self.index = index

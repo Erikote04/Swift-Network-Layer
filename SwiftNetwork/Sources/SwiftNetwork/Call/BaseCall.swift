@@ -12,13 +12,16 @@ import Foundation
 /// `BaseCall` provides shared execution, cancellation, and lifecycle
 /// management logic for concrete `Call` implementations.
 /// Subclasses are responsible for performing the actual execution.
+///
+/// - Safety: Internal state is protected by `ManagedCriticalState` to ensure
+///   thread-safe access across concurrency domains. Subclasses must not
+///   mutate shared state without appropriate synchronization.
 open class BaseCall: Call, @unchecked Sendable {
 
     /// The request associated with this call.
     public let request: Request
 
-    private let stateLock = NSLock()
-    private var state: CallState = .idle
+    private let state = ManagedCriticalState<CallState>(.idle)
 
     /// Creates a new base call.
     ///
@@ -51,16 +54,12 @@ open class BaseCall: Call, @unchecked Sendable {
     /// If the call is already running, it will be marked as cancelled
     /// and execution should stop as soon as possible.
     public func cancel() {
-        stateLock.lock()
-        state = .cancelled
-        stateLock.unlock()
+        state.withCriticalRegion { $0 = .cancelled }
     }
 
     /// Indicates whether the call has been cancelled.
     public var isCancelled: Bool {
-        stateLock.lock()
-        defer { stateLock.unlock() }
-        return state == .cancelled
+        state.withCriticalRegion { $0 == .cancelled }
     }
 
     // MARK: - Overridable
@@ -82,24 +81,21 @@ open class BaseCall: Call, @unchecked Sendable {
     ///
     /// - Throws: A fatal error if the call is executed more than once.
     private func beginExecution() throws {
-        stateLock.lock()
-        defer { stateLock.unlock() }
+        state.withCriticalRegion { currentState in
+            guard currentState == .idle else {
+                fatalError("Call can only be executed once")
+            }
 
-        guard state == .idle else {
-            fatalError("Call can only be executed once")
+            currentState = .running
         }
-
-        state = .running
     }
 
     /// Marks the call as completed if it was not cancelled.
     private func finishExecution() {
-        stateLock.lock()
-        
-        if state != .cancelled {
-            state = .completed
+        state.withCriticalRegion { currentState in
+            if currentState != .cancelled {
+                currentState = .completed
+            }
         }
-        
-        stateLock.unlock()
     }
 }
