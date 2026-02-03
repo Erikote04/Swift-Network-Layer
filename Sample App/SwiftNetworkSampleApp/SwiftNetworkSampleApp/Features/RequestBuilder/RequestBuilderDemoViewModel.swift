@@ -45,10 +45,9 @@ final class RequestBuilderDemoViewModel {
         let requestURL = components?.url ?? URL(string: "/search/repositories")!
 
         builder = RequestBuilder(method: .get, url: requestURL)
-        builder
-            .header("Accept", "application/vnd.github+json")
-            .timeout(20)
-            .cachePolicy(.ignoreCache)
+        _ = builder.header("Accept", "application/vnd.github+json")
+        _ = builder.timeout(20)
+        _ = builder.cachePolicy(.ignoreCache)
 
         let request = builder.build()
 
