@@ -248,13 +248,6 @@ public final class NetworkClient: NetworkClientProtocol {
     ///
     /// - Returns: A URLSession instance for WebSocket connections.
     private func extractSession() -> URLSession {
-        // Try to extract session from URLSessionTransport
-        if let urlSessionTransport = transport as? URLSessionTransport {
-            // For now, return shared since URLSessionTransport doesn't expose its session
-            // This can be enhanced later if needed
-            return .shared
-        }
-        
         return .shared
     }
     

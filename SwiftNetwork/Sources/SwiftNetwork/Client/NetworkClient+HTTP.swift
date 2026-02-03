@@ -47,7 +47,7 @@ public extension NetworkClient {
             path: path,
             headers: headers,
             body: .json(body),
-            cachePolicy: .reloadIgnoringCache
+            cachePolicy: .ignoreCache
         )
     }
 

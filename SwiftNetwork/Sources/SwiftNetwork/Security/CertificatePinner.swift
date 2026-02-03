@@ -192,18 +192,26 @@ public struct CertificatePinner: Sendable {
     /// - Parameter serverTrust: The server trust to extract from.
     /// - Returns: An array of certificates, or `nil` if extraction fails.
     private func getCertificateChain(from serverTrust: SecTrust) -> [SecCertificate]? {
-        let certificateCount = SecTrustGetCertificateCount(serverTrust)
-        guard certificateCount > 0 else { return nil }
-        
-        var certificates: [SecCertificate] = []
-        
-        for index in 0..<certificateCount {
-            if let certificate = SecTrustGetCertificateAtIndex(serverTrust, index) {
-                certificates.append(certificate)
+        if #available(iOS 15.0, macOS 12.0, *) {
+            if let chain = SecTrustCopyCertificateChain(serverTrust) as? [SecCertificate],
+               !chain.isEmpty {
+                return chain
             }
+            return nil
+        } else {
+            let certificateCount = SecTrustGetCertificateCount(serverTrust)
+            guard certificateCount > 0 else { return nil }
+            
+            var certificates: [SecCertificate] = []
+            
+            for index in 0..<certificateCount {
+                if let certificate = SecTrustGetCertificateAtIndex(serverTrust, index) {
+                    certificates.append(certificate)
+                }
+            }
+            
+            return certificates.isEmpty ? nil : certificates
         }
-        
-        return certificates.isEmpty ? nil : certificates
     }
     
     /// Extracts pins from a certificate chain.

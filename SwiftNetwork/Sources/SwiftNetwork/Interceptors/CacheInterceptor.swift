@@ -56,7 +56,7 @@ public struct CacheInterceptor: Interceptor {
     /// - Throws: Any error produced during request execution.
     public func intercept(_ chain: InterceptorChainProtocol) async throws -> Response {
         let request = chain.request
-        let policy = request.cachePolicy ?? .useCache
+        let policy = request.cachePolicy
         
         switch policy {
         case .useCache:

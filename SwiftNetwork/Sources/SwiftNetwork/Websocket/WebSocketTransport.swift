@@ -216,10 +216,13 @@ public actor WebSocketTransport {
         }
         
         do {
-            try await task.sendPing { error in
-                // Pong received or error occurred
-                if let error = error {
-                    print("Ping failed: \(error)")
+            try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                task.sendPing { error in
+                    if let error = error {
+                        continuation.resume(throwing: error)
+                    } else {
+                        continuation.resume(returning: ())
+                    }
                 }
             }
         } catch is CancellationError {

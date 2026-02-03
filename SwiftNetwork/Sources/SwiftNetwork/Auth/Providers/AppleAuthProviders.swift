@@ -21,10 +21,14 @@ import CryptoKit
 /// ### Authentication
 /// - ``login()``
 @available(iOS 13.0, macOS 10.15, *)
-public final class AppleAuthProvider: NSObject, AuthProvider, Sendable {
+@MainActor
+public final class AppleAuthProvider: NSObject, AuthProvider {
     
     private let scopes: [ASAuthorization.Scope]
     private let continuation: ManagedContinuation<AuthCredentials>
+    #if os(iOS)
+    private var windowContextProvider: ASAuthorizationControllerPresentationContextProviding?
+    #endif
     
     /// Creates a new Apple authentication provider.
     ///
@@ -58,7 +62,9 @@ public final class AppleAuthProvider: NSObject, AuthProvider, Sendable {
         #if os(iOS)
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
-            controller.presentationContextProvider = WindowContextProvider(window: window)
+            let contextProvider = WindowContextProvider(window: window)
+            windowContextProvider = contextProvider
+            controller.presentationContextProvider = contextProvider
         }
         #endif
         
@@ -149,7 +155,7 @@ extension AppleAuthProvider: ASAuthorizationControllerDelegate {
                 authError = .providerNotConfigured
             case .unknown:
                 authError = .authenticationFailed(underlying: error)
-            @unknown default:
+            default:
                 authError = .authenticationFailed(underlying: error)
             }
         } else {

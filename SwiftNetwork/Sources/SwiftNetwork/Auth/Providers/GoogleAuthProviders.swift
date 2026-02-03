@@ -143,7 +143,7 @@ public final class GoogleAuthProvider: NSObject, AuthProvider, Sendable {
     #endif
     
     private func exchangeCodeForToken(code: String, codeVerifier: String) async throws -> AuthCredentials {
-        var components = URLComponents(string: "https://oauth2.googleapis.com/token")!
+        let components = URLComponents(string: "https://oauth2.googleapis.com/token")!
         
         let bodyParams = [
             "code": code,

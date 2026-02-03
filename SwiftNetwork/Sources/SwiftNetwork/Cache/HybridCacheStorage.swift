@@ -88,7 +88,7 @@ public actor HybridCacheStorage: CacheStorage {
         // Check disk cache
         if let entry = await diskCache.cachedEntry(for: request) {
             // Promote to memory
-            await storeInMemory(entry, for: url)
+            storeInMemory(entry, for: url)
             return entry
         }
         
@@ -112,7 +112,7 @@ public actor HybridCacheStorage: CacheStorage {
         let url = response.request.url
         
         // Store in both caches
-        await storeInMemory(entry, for: url)
+        storeInMemory(entry, for: url)
         await diskCache.store(response)
     }
     
