@@ -45,9 +45,9 @@ final class RequestBuilderDemoViewModel {
         let requestURL = components?.url ?? URL(string: "https://api.github.com/search/repositories")!
 
         builder = RequestBuilder(method: .get, url: requestURL)
-        _ = builder.header("Accept", "application/vnd.github+json")
-        _ = builder.timeout(20)
-        _ = builder.cachePolicy(.ignoreCache)
+        builder.header("Accept", "application/vnd.github+json")
+        builder.timeout(20)
+        builder.cachePolicy(.ignoreCache)
 
         let request = builder.build()
 
