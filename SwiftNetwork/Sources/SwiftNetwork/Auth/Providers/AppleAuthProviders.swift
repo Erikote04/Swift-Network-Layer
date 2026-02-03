@@ -117,14 +117,16 @@ public final class AppleAuthProvider: NSObject, AuthProvider {
 @available(iOS 13.0, macOS 10.15, *)
 extension AppleAuthProvider: ASAuthorizationControllerDelegate {
     
-    public func authorizationController(
+    public nonisolated func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithAuthorization authorization: ASAuthorization
     ) {
         guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
               let identityToken = credential.identityToken,
               let tokenString = String(data: identityToken, encoding: .utf8) else {
-            Task { await continuation.resume(throwing: AuthError.invalidCredentials) }
+            Task { @MainActor in
+                await continuation.resume(throwing: AuthError.invalidCredentials)
+            }
             return
         }
         
@@ -135,10 +137,12 @@ extension AppleAuthProvider: ASAuthorizationControllerDelegate {
             provider: .apple
         )
         
-        Task { await continuation.resume(returning: authCredentials) }
+        Task { @MainActor in
+            await continuation.resume(returning: authCredentials)
+        }
     }
     
-    public func authorizationController(
+    public nonisolated func authorizationController(
         controller: ASAuthorizationController,
         didCompleteWithError error: Error
     ) {
@@ -162,7 +166,9 @@ extension AppleAuthProvider: ASAuthorizationControllerDelegate {
             authError = .authenticationFailed(underlying: error)
         }
         
-        Task { await continuation.resume(throwing: authError) }
+        Task { @MainActor in
+            await continuation.resume(throwing: authError)
+        }
     }
 }
 
