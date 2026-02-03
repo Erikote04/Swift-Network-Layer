@@ -11,7 +11,7 @@ import SwiftNetwork
 @MainActor
 @Observable
 final class RepoListViewModel {
-    enum State: Equatable {
+    enum State {
         case idle
         case loading
         case loaded([GitHubRepo])
