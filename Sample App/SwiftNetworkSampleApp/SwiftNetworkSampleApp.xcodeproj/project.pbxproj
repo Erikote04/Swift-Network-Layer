@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BBF82DE32F32506700F5BF3F /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BBF82DE22F32506700F5BF3F /* SwiftNetwork */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		BBF82DD32F32502700F5BF3F /* SwiftNetworkSampleApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SwiftNetworkSampleApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BBF82DE32F32506700F5BF3F /* SwiftNetwork in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = SwiftNetworkSampleApp;
 			packageProductDependencies = (
+				BBF82DE22F32506700F5BF3F /* SwiftNetwork */,
 			);
 			productName = SwiftNetworkSampleApp;
 			productReference = BBF82DD32F32502700F5BF3F /* SwiftNetworkSampleApp.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = BBF82DCA2F32502700F5BF3F;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../../SwiftNetwork" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BBF82DD42F32502700F5BF3F /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../../SwiftNetwork" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../SwiftNetwork;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		BBF82DE22F32506700F5BF3F /* SwiftNetwork */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = SwiftNetwork;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = BBF82DCB2F32502700F5BF3F /* Project object */;
 }
