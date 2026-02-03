@@ -19,8 +19,6 @@ struct DiskCacheStorageTests {
             ttl: 60
         )
         
-        #expect(cache != nil)
-        
         await cache.clearAll()
     }
     
@@ -166,8 +164,6 @@ struct HybridCacheStorageTests {
             diskDirectory: "test-hybrid-\(UUID().uuidString)",
             ttl: 60
         )
-        
-        #expect(cache != nil)
         
         await cache.clearAll()
     }

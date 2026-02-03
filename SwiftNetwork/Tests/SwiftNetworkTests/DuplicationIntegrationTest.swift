@@ -17,15 +17,6 @@ struct DeduplicationIntegrationTests {
         let counter = CallCounter()
         let transport = FakeCountingTransport(counter: counter)
         
-        let config = NetworkClientConfiguration(
-            enableDeduplication: true
-        )
-        
-        let client = NetworkClient(
-            configuration: config,
-            session: .shared
-        )
-        
         // Replace transport with fake for testing
         let clientWithFakeTransport = NetworkClient(
             transport: transport,
@@ -65,10 +56,6 @@ struct DeduplicationIntegrationTests {
     func clientWithoutDeduplicationExecutesAll() async throws {
         let counter = CallCounter()
         let transport = FakeCountingTransport(counter: counter)
-        
-        let config = NetworkClientConfiguration(
-            enableDeduplication: false
-        )
         
         let client = NetworkClient(
             transport: transport,

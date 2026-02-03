@@ -88,11 +88,10 @@ struct ProgressTests {
             // Use confirmation to validate progress callbacks
             // Progress may be called multiple times, so use a range
             await confirmation("Progress callback is invoked", expectedCount: 1...10) { confirm in
-                if let progressCall = call as? ProgressCall {
-                    _ = try? await progressCall.execute { progress in
-                        // Progress callback was invoked
-                        confirm()
-                    }
+                let progressCall: ProgressCall = call
+                _ = try? await progressCall.execute { _ in
+                    // Progress callback was invoked
+                    confirm()
                 }
             }
         }
@@ -131,13 +130,12 @@ struct ProgressTests {
             
             let tracker = ProgressTracker()
             
-            if let progressCall = call as? ProgressCall {
-                _ = try? await progressCall.execute { progress in
-                    // Bytes should never decrease
-                    Task {
-                        let isValid = await tracker.update(progress.bytesTransferred)
-                        #expect(isValid)
-                    }
+            let progressCall: ProgressCall = call
+            _ = try? await progressCall.execute { progress in
+                // Bytes should never decrease
+                Task {
+                    let isValid = await tracker.update(progress.bytesTransferred)
+                    #expect(isValid)
                 }
             }
         }
@@ -158,7 +156,8 @@ struct ProgressTests {
             let transport = URLSessionTransport()
             let call = TransportCall(request: request, transport: transport)
             
-            #expect(call is ProgressCall)
+            let _: ProgressCall = call
+            #expect(Bool(true))
         }
         
         @Test("InterceptorCall conforms to ProgressCall")
@@ -175,7 +174,8 @@ struct ProgressTests {
                 transport: transport
             )
             
-            #expect(call is ProgressCall)
+            let _: ProgressCall = call
+            #expect(Bool(true))
         }
         
         @Test("ProgressCall execute() calls base implementation")
@@ -210,8 +210,8 @@ struct ProgressTests {
             )
             
             let call = client.newCall(request)
-            
-            #expect(call is ProgressCall)
+            let progressCall = call as? ProgressCall
+            #expect(progressCall != nil)
         }
         
         @Test("Progress works through interceptor chain")

@@ -215,6 +215,6 @@ struct RequestDeduplicatorTests {
         await deduplicator.clear()
         
         // No crash or errors expected
-        #expect(true)
+        #expect(Bool(true))
     }
 }

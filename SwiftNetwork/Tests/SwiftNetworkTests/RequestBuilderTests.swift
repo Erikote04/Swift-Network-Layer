@@ -132,7 +132,7 @@ struct RequestBuilderTests {
         _ = builder.header("X-Custom-Header", "custom-value")
         _ = builder.jsonBody(user)
         _ = builder.timeout(30)
-        _ = builder.cachePolicy(.reloadIgnoringCache)
+        _ = builder.cachePolicy(.ignoreCache)
         
         let request = builder.build()
         
@@ -141,7 +141,7 @@ struct RequestBuilderTests {
         #expect(request.headers["X-Custom-Header"] == "custom-value")
         #expect(request.body != nil)
         #expect(request.timeout == 30)
-        #expect(request.cachePolicy == .reloadIgnoringCache)
+        #expect(request.cachePolicy == .ignoreCache)
     }
     
     @Test("Builder uses default content type for raw data")

@@ -86,7 +86,8 @@ struct StreamingTests {
             let transport = URLSessionTransport()
             let call = TransportCall(request: request, transport: transport)
             
-            #expect(call is StreamingCall)
+            let _: StreamingCall = call
+            #expect(Bool(true))
         }
         
         @Test("StreamingCall execute() collects stream")
@@ -100,13 +101,12 @@ struct StreamingTests {
             let transport = URLSessionTransport()
             let call = TransportCall(request: request, transport: transport)
             
-            if let streamingCall = call as? StreamingCall {
-                let response = try await streamingCall.execute()
-                
-                #expect(response.statusCode == 200)
-                #expect(response.body != nil)
-                #expect(response.body!.count == 1024)
-            }
+            let streamingCall: StreamingCall = call
+            let response = try await streamingCall.execute()
+            
+            #expect(response.statusCode == 200)
+            #expect(response.body != nil)
+            #expect(response.body!.count == 1024)
         }
     }
     
@@ -128,13 +128,12 @@ struct StreamingTests {
             var chunkCount = 0
             var totalBytes = 0
             
-            if let streamingCall = call as? StreamingCall {
-                for try await chunk in streamingCall.stream() {
-                    chunkCount += 1
-                    totalBytes += chunk.count
-                    
-                    #expect(chunk.count > 0)
-                }
+            let streamingCall: StreamingCall = call
+            for try await chunk in streamingCall.stream() {
+                chunkCount += 1
+                totalBytes += chunk.count
+                
+                #expect(chunk.count > 0)
             }
             
             #expect(chunkCount > 0)
@@ -153,10 +152,9 @@ struct StreamingTests {
             
             var chunkCount = 0
             
-            if let streamingCall = call as? StreamingCall {
-                for try await _ in streamingCall.stream() {
-                    chunkCount += 1
-                }
+            let streamingCall: StreamingCall = call
+            for try await _ in streamingCall.stream() {
+                chunkCount += 1
             }
             
             // Empty response should yield no chunks or a single empty chunk
@@ -175,30 +173,28 @@ struct StreamingTests {
             
             // Test that cancellation is respected
             let task = Task {
-                if let streamingCall = call as? StreamingCall {
-                    var chunkCount = 0
-                    
-                    do {
-                        for try await _ in streamingCall.stream() {
-                            chunkCount += 1
-                            
-                            // Cancel after first chunk
-                            if chunkCount == 1 {
-                                throw CancellationError()
-                            }
-                        }
+                let streamingCall: StreamingCall = call
+                var chunkCount = 0
+                
+                do {
+                    for try await _ in streamingCall.stream() {
+                        chunkCount += 1
                         
-                        // Should not reach here
-                        return false
-                    } catch is CancellationError {
-                        // Cancellation was handled
-                        return true
-                    } catch {
-                        // Other errors
-                        return false
+                        // Cancel after first chunk
+                        if chunkCount == 1 {
+                            throw CancellationError()
+                        }
                     }
+                    
+                    // Should not reach here
+                    return false
+                } catch is CancellationError {
+                    // Cancellation was handled
+                    return true
+                } catch {
+                    // Other errors
+                    return false
                 }
-                return false
             }
             
             let wasCancelled = await task.value
@@ -220,8 +216,8 @@ struct StreamingTests {
             )
             
             let call = client.newCall(request)
-            
-            #expect(call is StreamingCall)
+            let streamingCall = call as? StreamingCall
+            #expect(streamingCall != nil)
         }
         
         @Test("Streaming with custom headers")
@@ -238,11 +234,10 @@ struct StreamingTests {
             var totalBytes = 0
             var chunkCount = 0
             
-            if let streamingCall = call as? StreamingCall {
-                for try await chunk in streamingCall.stream() {
-                    totalBytes += chunk.count
-                    chunkCount += 1
-                }
+            let streamingCall: StreamingCall = call
+            for try await chunk in streamingCall.stream() {
+                totalBytes += chunk.count
+                chunkCount += 1
             }
             
             // Should have received data in chunks
@@ -276,10 +271,9 @@ struct StreamingTests {
             
             let tracker = ChunkTracker()
             
-            if let streamingCall = call as? StreamingCall {
-                for try await chunk in streamingCall.stream() {
-                    await tracker.add(chunk.count)
-                }
+            let streamingCall: StreamingCall = call
+            for try await chunk in streamingCall.stream() {
+                await tracker.add(chunk.count)
             }
             
             let chunks = await tracker.getChunks()

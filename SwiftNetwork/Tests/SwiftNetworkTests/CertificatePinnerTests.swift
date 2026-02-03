@@ -46,7 +46,7 @@ struct CertificatePinnerTests {
         
         @Test("Creates pinner with pins")
         func createsPinnerWithPins() {
-            let pinner = CertificatePinner(
+            _ = CertificatePinner(
                 pins: [
                     "api.example.com": [
                         .publicKeyHash("sha256/primary..."),
@@ -56,27 +56,27 @@ struct CertificatePinnerTests {
             )
             
             // Pinner should be created successfully
-            #expect(pinner != nil)
+            #expect(Bool(true))
         }
         
         @Test("Creates pinner with any policy")
         func createsPinnerWithAnyPolicy() {
-            let pinner = CertificatePinner(
+            _ = CertificatePinner(
                 pins: ["example.com": [.publicKeyHash("sha256/hash...")]],
                 policy: .any
             )
             
-            #expect(pinner != nil)
+            #expect(Bool(true))
         }
         
         @Test("Creates pinner with all policy")
         func createsPinnerWithAllPolicy() {
-            let pinner = CertificatePinner(
+            _ = CertificatePinner(
                 pins: ["example.com": [.publicKeyHash("sha256/hash...")]],
                 policy: .all
             )
             
-            #expect(pinner != nil)
+            #expect(Bool(true))
         }
     }
     
@@ -97,17 +97,15 @@ struct CertificatePinnerTests {
                 certificatePinner: pinner
             )
             
-            let client = NetworkClient(configuration: config)
-            
-            #expect(client != nil)
+            _ = NetworkClient(configuration: config)
+            #expect(Bool(true))
         }
         
         @Test("Client works without certificate pinner")
         func clientWorksWithoutPinner() {
             let config = NetworkClientConfiguration()
-            let client = NetworkClient(configuration: config)
-            
-            #expect(client != nil)
+            _ = NetworkClient(configuration: config)
+            #expect(Bool(true))
         }
     }
 }

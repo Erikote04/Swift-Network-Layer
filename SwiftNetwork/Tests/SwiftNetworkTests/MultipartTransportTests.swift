@@ -168,8 +168,6 @@ struct MultipartTransportTests {
         
         let jsonData = Data("{\"key\":\"value\"}".utf8)
         let imageData = Data([0xFF, 0xD8])
-        let textData = Data("plain text".utf8)
-        
         let parts = [
             MultipartFormData(name: "metadata", data: jsonData, mimeType: "application/json"),
             MultipartFormData(name: "image", filename: "img.jpg", data: imageData, mimeType: "image/jpeg"),

@@ -178,8 +178,6 @@ struct URLSessionTransportRequestBodyTests {
     
     @Test("URLSessionTransport correctly encodes JSON body")
     func urlSessionEncodesJSON() throws {
-        let transport = URLSessionTransport()
-        
         let user = LoginRequest(username: "alice", password: "secret123")
         let request = Request(
             method: .post,
@@ -198,8 +196,6 @@ struct URLSessionTransportRequestBodyTests {
     
     @Test("URLSessionTransport correctly encodes form body")
     func urlSessionEncodesForm() throws {
-        let transport = URLSessionTransport()
-        
         let request = Request(
             method: .post,
             url: URL(string: "https://httpbin.org/post")!,
