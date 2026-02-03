@@ -20,6 +20,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.requestBuilder) {
                     FeatureRow(title: "Request Builder", subtitle: "Headers + timeout + query")
                 }
+                NavigationLink(value: Feature.caching) {
+                    FeatureRow(title: "Caching", subtitle: "Memory, disk, and hybrid cache")
+                }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
@@ -29,6 +32,8 @@ struct FeatureListView: View {
                 RepoListView(client: client)
             case .requestBuilder:
                 RequestBuilderDemoView(client: client)
+            case .caching:
+                CacheDemoView()
             }
         }
     }
@@ -37,6 +42,7 @@ struct FeatureListView: View {
 private enum Feature: Hashable {
     case repos
     case requestBuilder
+    case caching
 }
 
 private struct FeatureRow: View {
