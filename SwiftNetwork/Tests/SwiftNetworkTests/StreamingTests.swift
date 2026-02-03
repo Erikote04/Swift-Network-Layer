@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Streaming API")
+@Suite("Streaming API", .tags(.streaming))
 struct StreamingTests {
     
     // MARK: - StreamingResponse Tests
@@ -83,7 +83,7 @@ struct StreamingTests {
                 url: URL(string: "https://example.com")!
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             let _: StreamingCall = call
@@ -98,7 +98,7 @@ struct StreamingTests {
                 url: URL(string: "https://httpbin.org/bytes/1024")!
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             let streamingCall: StreamingCall = call
@@ -122,7 +122,7 @@ struct StreamingTests {
                 url: URL(string: "https://httpbin.org/bytes/16384")! // 16KB
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             var chunkCount = 0
@@ -147,7 +147,7 @@ struct StreamingTests {
                 url: URL(string: "https://httpbin.org/status/204")! // No content
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             var chunkCount = 0
@@ -168,7 +168,7 @@ struct StreamingTests {
                 url: URL(string: "https://httpbin.org/bytes/1048576")! // 1MB
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             // Test that cancellation is respected
@@ -228,7 +228,7 @@ struct StreamingTests {
                 headers: ["Accept": "application/octet-stream"]
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             var totalBytes = 0
@@ -253,7 +253,7 @@ struct StreamingTests {
                 url: URL(string: "https://httpbin.org/bytes/32768")! // 32KB
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             // Track chunks as they arrive

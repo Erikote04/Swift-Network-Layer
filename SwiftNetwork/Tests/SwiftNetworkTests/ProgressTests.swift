@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Progress Reporting")
+@Suite("Progress Reporting", .tags(.progress))
 struct ProgressTests {
     
     // MARK: - Progress Struct Tests
@@ -82,7 +82,7 @@ struct ProgressTests {
                 body: .multipart(parts)
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             // Use confirmation to validate progress callbacks
@@ -114,7 +114,7 @@ struct ProgressTests {
                 body: .multipart(parts)
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             // Use an actor to safely track progress
@@ -153,7 +153,7 @@ struct ProgressTests {
                 url: URL(string: "https://example.com")!
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             let _: ProgressCall = call
@@ -167,7 +167,7 @@ struct ProgressTests {
                 url: URL(string: "https://example.com")!
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = InterceptorCall(
                 request: request,
                 interceptors: [],
@@ -185,7 +185,7 @@ struct ProgressTests {
                 url: URL(string: "https://httpbin.org/get")!
             )
             
-            let transport = URLSessionTransport()
+            let transport = FakeStreamingTransport()
             let call = TransportCall(request: request, transport: transport)
             
             // Execute without progress should work

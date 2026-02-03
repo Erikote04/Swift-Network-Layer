@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Certificate Pinning")
+@Suite("Certificate Pinning", .tags(.security))
 struct CertificatePinnerTests {
     
     @Suite("Pin Creation")

@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Retry Interceptor Metrics Tests")
+@Suite("Retry Interceptor Metrics Tests", .tags(.retry))
 struct RetryInterceptorMetricsTests {
     
     @Test("RetryInterceptor records retry attempts")

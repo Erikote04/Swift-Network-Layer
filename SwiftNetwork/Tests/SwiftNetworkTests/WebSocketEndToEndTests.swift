@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("WebSocket End-to-End")
+@Suite("WebSocket End-to-End", .tags(.websocket))
 struct WebSocketEndToEndTests {
     
     @Test("Complete WebSocket lifecycle with NetworkClient")

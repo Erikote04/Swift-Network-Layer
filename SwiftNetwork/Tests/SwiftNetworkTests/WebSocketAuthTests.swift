@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("WebSocket Authentication")
+@Suite("WebSocket Authentication", .tags(.websocket))
 struct WebSocketAuthTests {
     
     @Test("WebSocket call retrieves token from store")

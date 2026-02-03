@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Network Metrics Tests")
+@Suite("Network Metrics Tests", .tags(.metrics))
 struct NetworkMetricsTests {
     
     @Test("MetricsInterceptor records successful request")

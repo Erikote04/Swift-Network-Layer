@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Enhanced Auth Interceptor Tests")
+@Suite("Enhanced Auth Interceptor Tests", .tags(.auth))
 struct AuthInterceptorEnhancedTests {
     
     @Test("Auth interceptor with manager injects token")

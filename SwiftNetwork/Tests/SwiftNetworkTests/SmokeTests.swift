@@ -8,9 +8,10 @@
 import Testing
 @testable import SwiftNetwork
 
+@Suite("Smoke Tests", .tags(.smoke))
 struct SmokeTests {
 
-    @Test
+    @Test("Client executes a request")
     func clientExecutesRequest() async throws {
         let transport = FakeTransport { request in
             TestResponses.success(request: request)

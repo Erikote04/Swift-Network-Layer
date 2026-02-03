@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Prioritized Interceptor Tests")
+@Suite("Prioritized Interceptor Tests", .tags(.interceptors))
 struct PrioritizedInterceptorTests {
     
     @Test("Interceptors execute in priority order")

@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Aggregate Metrics Tests")
+@Suite("Aggregate Metrics Tests", .tags(.metrics))
 struct AggregateMetricsTests {
     
     @Test("AggregateMetrics tracks successful requests")

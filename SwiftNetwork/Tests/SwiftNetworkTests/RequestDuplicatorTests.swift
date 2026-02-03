@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Request Deduplication Tests")
+@Suite("Request Deduplication Tests", .tags(.performance))
 struct RequestDeduplicatorTests {
     
     @Test("Identical requests share single execution")

@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("WebSocket Transport")
+@Suite("WebSocket Transport", .tags(.websocket))
 struct WebSocketTransportTests {
     
     // MARK: - Message Tests

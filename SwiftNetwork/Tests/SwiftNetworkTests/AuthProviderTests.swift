@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Auth Provider Tests")
+@Suite("Auth Provider Tests", .tags(.authProviders))
 struct AuthProviderTests {
     
     @Test("AuthCredentials stores all properties correctly")

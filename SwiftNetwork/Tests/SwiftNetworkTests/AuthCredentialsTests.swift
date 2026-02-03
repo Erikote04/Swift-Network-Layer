@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("AuthCredentials Tests")
+@Suite("AuthCredentials Tests", .tags(.auth))
 struct AuthCredentialsTests {
     
     @Test("Credentials are Sendable and Equatable")

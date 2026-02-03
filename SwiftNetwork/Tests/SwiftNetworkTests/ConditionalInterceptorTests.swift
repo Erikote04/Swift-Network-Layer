@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Conditional Interceptor Tests")
+@Suite("Conditional Interceptor Tests", .tags(.interceptors))
 struct ConditionalInterceptorTests {
     
     // MARK: - Helpers

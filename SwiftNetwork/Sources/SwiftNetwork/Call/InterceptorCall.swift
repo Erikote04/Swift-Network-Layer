@@ -76,8 +76,8 @@ struct InterceptorCall: ProgressCall, StreamingCall {
         ) { [transport] request in
             // If progress handler exists and transport supports it, use it
             if let progressHandler = progress,
-               let urlSessionTransport = transport as? URLSessionTransport {
-                return try await urlSessionTransport.execute(request, progress: progressHandler)
+               let progressTransport = transport as? ProgressReportingTransport {
+                return try await progressTransport.execute(request, progress: progressHandler)
             }
             
             // Otherwise, use regular execution
@@ -98,8 +98,8 @@ struct InterceptorCall: ProgressCall, StreamingCall {
             Task {
                 do {
                     // Check if transport supports streaming
-                    if let urlSessionTransport = transport as? URLSessionTransport {
-                        let streamingResponse = try await urlSessionTransport.stream(request)
+                    if let streamingTransport = transport as? StreamingTransport {
+                        let streamingResponse = try await streamingTransport.stream(request)
                         
                         for try await chunk in streamingResponse.stream {
                             continuation.yield(chunk)

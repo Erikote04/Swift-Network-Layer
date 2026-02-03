@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Cache Interceptor Metrics Tests")
+@Suite("Cache Interceptor Metrics Tests", .tags(.cache))
 struct CacheInterceptorMetricsTests {
     
     @Test("CacheInterceptor records cache hits")

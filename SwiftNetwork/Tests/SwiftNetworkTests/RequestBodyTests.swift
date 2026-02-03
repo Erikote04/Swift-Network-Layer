@@ -24,7 +24,7 @@ fileprivate struct CustomEncodableType: Encodable, Sendable {
 
 // MARK: - Request Body Tests
 
-@Suite("RequestBody")
+@Suite("RequestBody", .tags(.requestBody))
 struct RequestBodyTests {
     
     // MARK: - Data Body Tests

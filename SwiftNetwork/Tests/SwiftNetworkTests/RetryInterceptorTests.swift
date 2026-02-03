@@ -8,11 +8,12 @@
 import Testing
 @testable import SwiftNetwork
 
+@Suite("Retry Interceptor Tests", .tags(.retry))
 struct RetryInterceptorTests {
 
     struct DummyError: Error {}
 
-    @Test
+    @Test("Retries until success")
     func retriesOnTransportErrorUntilSuccess() async throws {
         let request = Request(
             method: .get,
@@ -50,7 +51,7 @@ struct RetryInterceptorTests {
         #expect(await transport.calls == 3)
     }
 
-    @Test
+    @Test("Stops after max retries")
     func stopsRetryingAfterMaxRetries() async throws {
         let request = Request(
             method: .get,
@@ -94,7 +95,7 @@ struct RetryInterceptorTests {
         }
     }
 
-    @Test
+    @Test("Does not retry cancelled errors")
     func doesNotRetryOnCancelledError() async throws {
         let request = Request(
             method: .get,

@@ -18,7 +18,7 @@ fileprivate struct LoginRequest: Codable, Sendable {
 
 // MARK: - Transport Integration Tests
 
-@Suite("RequestBody Transport Integration")
+@Suite("RequestBody Transport Integration", .tags(.transport))
 struct RequestBodyTransportTests {
     
     @Test("Transport encodes JSON body and sets Content-Type")
@@ -173,7 +173,7 @@ struct RequestBodyTransportTests {
 
 // MARK: - Real URLSession Integration Tests
 
-@Suite("URLSessionTransport RequestBody Handling", .serialized)
+@Suite("URLSessionTransport RequestBody Handling", .serialized, .tags(.transport))
 struct URLSessionTransportRequestBodyTests {
     
     @Test("URLSessionTransport correctly encodes JSON body")

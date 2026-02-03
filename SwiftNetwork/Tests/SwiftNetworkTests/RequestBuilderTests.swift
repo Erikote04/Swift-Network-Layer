@@ -19,7 +19,7 @@ fileprivate struct Product: Codable, Sendable {
 
 // MARK: - RequestBuilder Tests
 
-@Suite("RequestBuilder with RequestBody")
+@Suite("RequestBuilder with RequestBody", .tags(.request))
 struct RequestBuilderTests {
     
     @Test("Builder constructs request with RequestBody")

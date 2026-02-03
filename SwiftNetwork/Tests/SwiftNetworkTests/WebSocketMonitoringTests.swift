@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("WebSocket Connection Monitoring")
+@Suite("WebSocket Connection Monitoring", .tags(.websocket))
 struct WebSocketMonitoringTests {
     
     @Test("Connection monitor can be created")

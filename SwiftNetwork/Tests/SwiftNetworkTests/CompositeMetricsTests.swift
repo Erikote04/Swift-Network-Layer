@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Composite Metrics Tests")
+@Suite("Composite Metrics Tests", .tags(.metrics))
 struct CompositeMetricsTests {
     
     @Test("CompositeMetrics forwards events to all collectors")

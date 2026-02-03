@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Enhanced Auth Manager Tests")
+@Suite("Enhanced Auth Manager Tests", .tags(.auth))
 struct EnhancedAuthManagerTests {
     
     @Test("Manager with expiring token triggers refresh")

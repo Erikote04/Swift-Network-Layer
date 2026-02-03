@@ -64,8 +64,8 @@ struct TransportCall: ProgressCall, StreamingCall {
         }
 
         // Check if transport supports progress
-        if let urlSessionTransport = transport as? URLSessionTransport {
-            return try await urlSessionTransport.execute(request, progress: progress)
+        if let progressTransport = transport as? ProgressReportingTransport {
+            return try await progressTransport.execute(request, progress: progress)
         }
         
         // Fallback to regular execution
@@ -84,8 +84,8 @@ struct TransportCall: ProgressCall, StreamingCall {
             Task {
                 do {
                     // Check if transport supports streaming
-                    if let urlSessionTransport = transport as? URLSessionTransport {
-                        let streamingResponse = try await urlSessionTransport.stream(request)
+                    if let streamingTransport = transport as? StreamingTransport {
+                        let streamingResponse = try await streamingTransport.stream(request)
                         
                         for try await chunk in streamingResponse.stream {
                             continuation.yield(chunk)

@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Request and Response Interceptor Tests")
+@Suite("Request and Response Interceptor Tests", .tags(.interceptors))
 struct RequestResponseInterceptorTests {
     
     // MARK: - Fake Interceptors

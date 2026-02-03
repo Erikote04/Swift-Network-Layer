@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Request Priority Tests")
+@Suite("Request Priority Tests", .tags(.priority))
 struct RequestPriorityTests {
     
     @Test("Priority levels are ordered correctly")

@@ -15,7 +15,7 @@ import Foundation
 ///
 /// - Safety: `URLSessionTransport` is actor-isolated, ensuring access to its
 ///   mutable state is serialized by the actor runtime.
-actor URLSessionTransport: Transport {
+actor URLSessionTransport: Transport, ProgressReportingTransport, StreamingTransport {
 
     private let session: URLSession
     private let delegate: PinningURLSessionDelegate?

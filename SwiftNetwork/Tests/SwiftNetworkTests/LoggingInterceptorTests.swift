@@ -11,7 +11,7 @@ import Foundation
 
 // MARK: - Logging Interceptor Tests
 
-@Suite("LoggingInterceptor with RequestBody")
+@Suite("LoggingInterceptor with RequestBody", .tags(.logging))
 struct LoggingInterceptorTests {
     
     @Test("Logging interceptor handles JSON body")

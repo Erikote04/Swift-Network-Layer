@@ -8,9 +8,10 @@
 import Testing
 @testable import SwiftNetwork
 
+@Suite("Interceptor Chain Tests", .tags(.interceptors))
 struct InterceptorChainTests {
 
-    @Test
+    @Test("Interceptors execute in order")
     func interceptorsExecuteInOrder() async throws {
         let recorder = Recorder()
 
@@ -40,7 +41,7 @@ struct InterceptorChainTests {
         #expect(events == ["A", "B", "C"])
     }
     
-    @Test
+    @Test("Interceptor can modify request")
     func interceptorCanModifyRequest() async throws {
         let interceptor = HeaderMutatingInterceptor(
             header: ("X-Test", "123")
@@ -64,7 +65,7 @@ struct InterceptorChainTests {
         _ = try await client.newCall(request).execute()
     }
 
-    @Test
+    @Test("Proceed is called only once")
     func proceedIsCalledOnlyOnce() async throws {
         let interceptor = ProceedOnceInterceptor()
 

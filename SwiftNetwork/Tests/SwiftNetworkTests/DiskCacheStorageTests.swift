@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Disk Cache Storage")
+@Suite("Disk Cache Storage", .tags(.cache))
 struct DiskCacheStorageTests {
     
     @Test("Creates disk cache successfully")

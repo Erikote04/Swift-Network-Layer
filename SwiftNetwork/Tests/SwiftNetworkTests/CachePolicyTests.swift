@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Cache Policy")
+@Suite("Cache Policy", .tags(.cache))
 struct CachePolicyTests {
 
     // MARK: - CacheEntry Tests

@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("MultipartFormData")
+@Suite("MultipartFormData", .tags(.multipart))
 struct MultipartFormDataTests {
     
     // MARK: - Creation Tests

@@ -8,6 +8,7 @@
 import Testing
 @testable import SwiftNetwork
 
+@Suite("Auth Concurrency Tests", .tags(.auth))
 struct AuthConcurrencyTests {
 
     @Test

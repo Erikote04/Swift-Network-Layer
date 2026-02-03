@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Multipart Transport Integration")
+@Suite("Multipart Transport Integration", .tags(.multipart))
 struct MultipartTransportTests {
     
     @Test("Transport handles multipart upload")

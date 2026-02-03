@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Filtered Metrics Tests")
+@Suite("Filtered Metrics Tests", .tags(.metrics))
 struct FilteredMetricsTests {
     
     @Test("FilteredMetrics filters by custom predicate")

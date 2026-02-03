@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("WebSocket Integration")
+@Suite("WebSocket Integration", .tags(.websocket))
 struct WebSocketIntegrationTests {
     
     @Test("BaseWebSocketCall creates transport")

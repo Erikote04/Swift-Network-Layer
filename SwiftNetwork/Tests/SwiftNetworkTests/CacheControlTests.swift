@@ -9,7 +9,7 @@ import Testing
 import Foundation
 @testable import SwiftNetwork
 
-@Suite("Cache-Control Directives")
+@Suite("Cache-Control Directives", .tags(.cache))
 struct CacheControlTests {
     
     // MARK: - Directive Parsing Tests

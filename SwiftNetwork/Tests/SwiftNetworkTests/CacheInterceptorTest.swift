@@ -8,6 +8,7 @@
 import Testing
 @testable import SwiftNetwork
 
+@Suite("Cache Interceptor Tests", .tags(.cache))
 struct CacheInterceptorTests {
     
     @Test
