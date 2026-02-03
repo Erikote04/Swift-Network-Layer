@@ -36,13 +36,13 @@ final class RequestBuilderDemoViewModel {
         )
 
         let query = "swift language:swift"
-        var components = URLComponents(url: URL(string: "/search/repositories")!, resolvingAgainstBaseURL: true)
+        var components = URLComponents(string: "https://api.github.com/search/repositories")
         components?.queryItems = [
             URLQueryItem(name: "q", value: query),
             URLQueryItem(name: "sort", value: "stars"),
             URLQueryItem(name: "order", value: "desc")
         ]
-        let requestURL = components?.url ?? URL(string: "/search/repositories")!
+        let requestURL = components?.url ?? URL(string: "https://api.github.com/search/repositories")!
 
         builder = RequestBuilder(method: .get, url: requestURL)
         _ = builder.header("Accept", "application/vnd.github+json")
