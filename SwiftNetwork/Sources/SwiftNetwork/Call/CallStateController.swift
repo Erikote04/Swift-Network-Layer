@@ -9,7 +9,7 @@ import Foundation
 
 /// Actor-isolated state controller for call lifecycle.
 ///
-/// This ensures execution and cancellation state is safely managed across
+/// Ensures execution and cancellation state is safely managed across
 /// concurrency domains without locks or unchecked Sendable conformance.
 actor CallStateController {
 

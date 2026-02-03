@@ -13,7 +13,7 @@ import Foundation
 /// stream response data as an `AsyncSequence` of chunks, rather than
 /// accumulating all data in memory before returning.
 ///
-/// This is particularly useful for:
+/// Useful for:
 /// - Large file downloads
 /// - Streaming APIs (Server-Sent Events, NDJSON)
 /// - Processing data incrementally

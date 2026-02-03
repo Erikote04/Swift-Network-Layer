@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents an HTTP request method.
 ///
-/// This enum defines the standard HTTP methods supported by SwiftNetwork.
+/// Standard HTTP methods supported by SwiftNetwork.
 public enum HTTPMethod: String, Sendable {
 
     /// HTTP GET method.

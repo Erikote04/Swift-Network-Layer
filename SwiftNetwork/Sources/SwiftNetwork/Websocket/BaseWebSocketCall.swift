@@ -15,7 +15,7 @@ import Foundation
 ///
 /// ## Overview
 ///
-/// This implementation:
+/// Implementation details:
 /// - Resolves WebSocket URLs against base configuration
 /// - Applies authentication headers automatically
 /// - Supports cancellation

@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents metrics for a failed network request.
 ///
-/// This event captures error information and timing for failed requests.
+/// Event that captures error information and timing for failed requests.
 public struct ErrorMetricEvent: Sendable {
     
     /// The HTTP method used for the request.

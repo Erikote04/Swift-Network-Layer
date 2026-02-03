@@ -7,8 +7,7 @@
 
 import Foundation
 
-/// An interceptor that handles authentication by adding tokens to requests
-/// and automatically refreshing expired tokens.
+/// An interceptor that handles authentication by adding tokens to requests and automatically refreshing expired tokens.
 ///
 /// `AuthInterceptor` can work standalone or integrate with `AuthManager`
 /// for automatic token refresh and expiration handling.

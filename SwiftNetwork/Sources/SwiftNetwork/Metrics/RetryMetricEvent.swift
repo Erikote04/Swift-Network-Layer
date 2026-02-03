@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents metrics for a retry attempt.
 ///
-/// This event tracks retry attempts for failed requests,
+/// Event that tracks retry attempts for failed requests,
 /// including the attempt number and reason for retry.
 public struct RetryMetricEvent: Sendable {
     

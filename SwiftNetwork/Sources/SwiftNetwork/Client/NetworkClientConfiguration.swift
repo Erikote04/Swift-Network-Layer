@@ -9,7 +9,7 @@ import Foundation
 
 /// Defines the global configuration applied to a `NetworkClient`.
 ///
-/// This includes base URL resolution, default headers, request timeout,
+/// Includes base URL resolution, default headers, request timeout,
 /// interceptors with optional prioritization and request/response separation,
 /// security configuration such as certificate pinning, and performance
 /// optimizations like request deduplication.

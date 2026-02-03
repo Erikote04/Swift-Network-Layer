@@ -27,7 +27,7 @@ import Foundation
 ///
 /// ## Thread Safety
 ///
-/// This actor safely coordinates multiple collectors concurrently,
+/// Actor that safely coordinates multiple collectors concurrently,
 /// ensuring all collectors receive events in order.
 public actor CompositeMetrics: NetworkMetrics {
     

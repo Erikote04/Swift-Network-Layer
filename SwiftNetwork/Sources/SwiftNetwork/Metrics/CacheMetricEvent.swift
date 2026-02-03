@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents metrics for cache operations.
 ///
-/// This event tracks cache hits, misses, and validation status.
+/// Event that tracks cache hits, misses, and validation status.
 public struct CacheMetricEvent: Sendable {
     
     /// The result of the cache operation.

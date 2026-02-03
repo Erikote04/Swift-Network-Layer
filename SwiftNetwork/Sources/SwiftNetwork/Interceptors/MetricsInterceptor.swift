@@ -9,7 +9,7 @@ import Foundation
 
 /// An interceptor that records network metrics for all requests.
 ///
-/// This interceptor captures timing information, response status,
+/// Interceptor that captures timing information, response status,
 /// and error details, forwarding them to a configured metrics collector.
 ///
 /// ## Usage

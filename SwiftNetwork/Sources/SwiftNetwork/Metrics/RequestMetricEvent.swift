@@ -9,7 +9,7 @@ import Foundation
 
 /// Represents metrics for a completed network request.
 ///
-/// This event captures timing information, response status,
+/// Event that captures timing information, response status,
 /// and metadata about the request execution.
 public struct RequestMetricEvent: Sendable {
     

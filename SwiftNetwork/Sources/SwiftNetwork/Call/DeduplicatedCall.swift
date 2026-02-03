@@ -12,7 +12,7 @@ import Foundation
 /// `DeduplicatedCall` wraps another call implementation and ensures that
 /// multiple concurrent identical requests share a single execution.
 ///
-/// This type is used internally by `NetworkClient` when deduplication
+/// Type used internally by `NetworkClient` when deduplication
 /// is enabled in the configuration.
 struct DeduplicatedCall: Call {
     

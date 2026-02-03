@@ -27,7 +27,7 @@ import Foundation
 ///
 /// ## Thread Safety
 ///
-/// This actor is fully thread-safe and can be safely accessed
+/// Actor that is fully thread-safe and can be safely accessed
 /// from multiple concurrent requests.
 public actor AggregateMetrics: NetworkMetrics {
     

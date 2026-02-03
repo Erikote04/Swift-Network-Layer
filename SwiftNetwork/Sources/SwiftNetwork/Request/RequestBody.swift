@@ -254,7 +254,7 @@ public enum RequestBody: Sendable {
 
 /// A type-erased `Encodable` wrapper.
 ///
-/// This internal type allows `RequestBody.json(_:)` to accept any `Encodable`
+/// Internal wrapper that allows `RequestBody.json(_:)` to accept any `Encodable`
 /// conforming type while maintaining `Sendable` semantics.
 private struct AnyEncodable: Encodable, Sendable {
     private let _encode: @Sendable (Encoder) throws -> Void
@@ -274,7 +274,7 @@ private struct AnyEncodable: Encodable, Sendable {
 
 /// Percent-encodes a string for use in `application/x-www-form-urlencoded` format.
 ///
-/// This function follows the HTML5 specification for form encoding:
+/// Follows the HTML5 specification for form encoding:
 /// - Spaces are encoded as `+`
 /// - Alphanumeric characters and `-`, `_`, `.`, `~` are not encoded
 /// - All other characters are percent-encoded

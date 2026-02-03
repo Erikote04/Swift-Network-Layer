@@ -13,8 +13,7 @@ import Foundation
 /// URLSession authentication flow, validating server certificates against
 /// configured pins.
 ///
-/// This delegate is used internally by `URLSessionTransport` when certificate
-/// pinning is enabled.
+/// Delegate used internally by `URLSessionTransport` when certificate pinning is enabled.
 final class PinningURLSessionDelegate: NSObject, URLSessionDelegate {
     
     private let pinner: CertificatePinner

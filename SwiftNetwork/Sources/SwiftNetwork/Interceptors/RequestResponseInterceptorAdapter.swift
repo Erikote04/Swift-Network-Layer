@@ -9,7 +9,7 @@ import Foundation
 
 /// Adapts request-only and response-only interceptors to the full `Interceptor` protocol.
 ///
-/// This adapter enables the use of specialized interceptors in the standard
+/// Adapter that enables the use of specialized interceptors in the standard
 /// interceptor chain without requiring them to implement the full protocol.
 struct RequestResponseInterceptorAdapter: Interceptor {
     

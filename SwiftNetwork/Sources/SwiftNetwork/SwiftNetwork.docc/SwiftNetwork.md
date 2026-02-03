@@ -1,20 +1,16 @@
 # ``SwiftNetwork``
 
-SwiftNetwork is a modern, interceptor-driven networking library for Swift, inspired by OkHttp and built on top of `URLSession`, Swift Concurrency, and structured async/await APIs. It provides a clean and extensible networking layer that allows applications to focus on business logic while delegating networking concerns—such as authentication, retries, caching, logging, and timeouts—to composable interceptors.
+Modern networking with composable interceptors and Swift Concurrency.
 
 ## Overview
 
-SwiftNetwork is designed around a simple idea:
-
-**Networking should be declarative, predictable, and extensible.**
-
-Instead of scattering networking logic across the application, SwiftNetwork centralizes request execution and behavior in a configurable interceptor chain.
+SwiftNetwork centralizes request execution in a configurable interceptor chain so apps can focus on business logic instead of network plumbing.
 
 At its core, SwiftNetwork consists of:
 
 - A high-level ``NetworkClient`` API
 - An immutable ``Request`` / ``Response`` model
-- A `Call` abstraction for request execution
+- A ``Call`` abstraction for request execution
 - A composable interceptor pipeline
 - A pluggable transport layer
 
@@ -45,81 +41,29 @@ Each interceptor decides whether to:
 - Return a cached response
 - Fail with an error
 
----
-
-## Interceptors
-
-Interceptors are the core building blocks of SwiftNetwork.
-
-They allow cross-cutting concerns to be expressed as isolated, reusable units that can be composed in different orders depending on application needs.
-
-Built-in interceptors include:
-
-- ``AuthInterceptor`` — Handles authentication and token refresh
-- ``CacheInterceptor`` — Provides response caching
-- ``RetryInterceptor`` — Retries failed requests
-- ``TimeoutInterceptor`` — Applies request timeouts
-- ``LoggingInterceptor`` — Logs requests and responses
-- ``DefaultHeadersInterceptor`` — Injects dynamic default headers
-
-Interceptors are executed in the order they are provided to the client.
-
----
-
-## Authentication and Concurrency
-
-SwiftNetwork provides a concurrency-safe authentication system.
-
-When multiple requests fail due to an expired token:
-
-- Only **one** token refresh is performed
-- Other requests wait for the refresh to complete
-- All requests resume using the updated token
-
-This behavior is coordinated by `AuthRefreshCoordinator` and requires no manual synchronization from the application.
-
----
-
-## Error Handling
-
-All failures in SwiftNetwork are represented by ``NetworkError``.
-
-Errors are surfaced consistently across:
-
-- Transport failures
-- HTTP errors
-- Decoding issues
-- Cancellation
-
-This allows applications to handle errors at a single integration point.
-
----
-
-## Getting Started
-
-The recommended entry point is ``NetworkClient``.
-
-```swift
-let client = NetworkClient(
-    configuration: NetworkClientConfiguration(
-        baseURL: URL(string: "https://api.example.com"),
-        interceptors: [
-            AuthInterceptor(
-                tokenStore: tokenStore,
-                authenticator: authenticator
-            ),
-            RetryInterceptor(),
-            LoggingInterceptor()
-        ]
-    )
-)
-
-let user: User = try await client.get("/user")
-```
-
----
-
 ## Topics
+
+### Integration Guides
+
+* <doc:GettingStartedGuide>
+* <doc:ConfigurationGuide>
+* <doc:RequestsGuide>
+* <doc:CallsGuide>
+* <doc:InterceptorsGuide>
+* <doc:AuthenticationGuide>
+* <doc:TokenStoresGuide>
+* <doc:AuthProvidersAppleGuide>
+* <doc:AuthProvidersGoogleGuide>
+* <doc:CachingGuide>
+* <doc:RetriesGuide>
+* <doc:LoggingGuide>
+* <doc:TimeoutsGuide>
+* <doc:MetricsGuide>
+* <doc:PerformanceGuide>
+* <doc:ProgressAndStreamingGuide>
+* <doc:WebSocketsGuide>
+* <doc:SecurityAndPinningGuide>
+* <doc:DeduplicationGuide>
 
 ### Client
 
@@ -141,31 +85,86 @@ let user: User = try await client.get("/user")
 
 * ``Call``
 * ``ProgressCall``
-* ``Progress``
+* ``SwiftNetwork/Progress-struct``
 * ``StreamingCall``
 * ``StreamingResponse``
+* ``RequestPriority``
 
 ### Interceptors
 
 * ``Interceptor``
 * ``InterceptorChainProtocol``
+* ``RequestInterceptor``
+* ``ResponseInterceptor``
+* ``PrioritizedInterceptor``
+* ``ConditionalInterceptor``
 * ``AuthInterceptor``
 * ``CacheInterceptor``
 * ``RetryInterceptor``
 * ``TimeoutInterceptor``
 * ``LoggingInterceptor``
 * ``DefaultHeadersInterceptor``
+* ``MetricsInterceptor``
 
 ### Authentication
 
+* ``AuthManager``
+* ``AuthRefreshCoordinator``
 * ``Authenticator``
+* ``AuthProvider``
+* ``AuthProviderType``
+* ``AuthCredentials``
+* ``AuthError``
 * ``TokenStore``
 * ``InMemoryTokenStore``
+* ``KeychainTokenStore``
+* ``AppleAuthProvider``
+* ``GoogleAuthProvider``
 
 ### Cache
 
 * ``ResponseCache``
+* ``CacheStorage``
+* ``CacheEntry``
 * ``CachePolicy``
+* ``CacheStorageError``
+* ``DiskCacheStorage``
+* ``HybridCacheStorage``
+
+### Metrics
+
+* ``NetworkMetrics``
+* ``AggregateMetrics``
+* ``AggregateMetrics/Snapshot``
+* ``CompositeMetrics``
+* ``ConsoleMetrics``
+* ``FilteredMetrics``
+* ``FilteredMetrics/MetricEvent``
+* ``RequestMetricEvent``
+* ``ErrorMetricEvent``
+* ``RetryMetricEvent``
+* ``CacheMetricEvent``
+* ``CacheMetricEvent/CacheResult``
+
+### Performance
+
+* ``RequestDeduplicator``
+* ``RequestPriority``
+
+### Security
+
+* ``CertificatePinner``
+* ``CertificatePinner/Pin``
+* ``CertificatePinner/Policy``
+
+### WebSockets
+
+* ``WebSocketCall``
+* ``BaseWebSocketCall``
+* ``WebSocketTransport``
+* ``WebSocketConnectionMonitor``
+* ``WebSocketMessage``
+* ``WebSocketError``
 
 ### Errors
 
