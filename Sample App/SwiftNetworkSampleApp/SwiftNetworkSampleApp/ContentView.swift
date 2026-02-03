@@ -12,7 +12,7 @@ struct ContentView: View {
 
     var body: some View {
         NavigationStack {
-            RepoListView(client: appState.client)
+            FeatureListView(client: appState.client)
         }
     }
 }
