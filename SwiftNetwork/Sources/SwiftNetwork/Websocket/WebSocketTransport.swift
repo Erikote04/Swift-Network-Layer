@@ -52,6 +52,14 @@ public actor WebSocketTransport {
     /// Callback to retrieve a fresh auth token when reconnecting.
     private var authTokenProvider: (@Sendable () async -> String?)?
     
+    // MARK: - Connection Monitoring
+    
+    /// Connection health monitor.
+    private var connectionMonitor: WebSocketConnectionMonitor?
+    
+    /// Whether ping/pong monitoring is enabled.
+    private var monitoringEnabled = false
+    
     // MARK: - Initialization
     
     /// Creates a new WebSocket transport.
@@ -102,6 +110,20 @@ public actor WebSocketTransport {
         
         self.isConnected = true
         self.reconnectAttempts = 0
+        
+        // Start connection monitoring if enabled
+        if monitoringEnabled, let monitor = connectionMonitor {
+            await monitor.start(
+                sendPing: { [weak self] in
+                    try await self?.ping()
+                },
+                onHealthChange: { [weak self] isHealthy in
+                    if !isHealthy {
+                        await self?.handleDisconnection(reason: "Connection unhealthy (no pong)")
+                    }
+                }
+            )
+        }
     }
     
     /// Sets a callback to retrieve fresh auth tokens during reconnection.
@@ -139,6 +161,10 @@ public actor WebSocketTransport {
         explicitlyClosed = true
         isConnected = false
         
+        if let monitor = connectionMonitor {
+            await monitor.stop()
+        }
+        
         let reasonData = reason?.data(using: .utf8)
         webSocketTask?.cancel(with: code, reason: reasonData)
         webSocketTask = nil
@@ -170,6 +196,32 @@ public actor WebSocketTransport {
         
         do {
             try await task.send(urlMessage)
+        } catch is CancellationError {
+            throw WebSocketError.cancelled
+        } catch {
+            throw WebSocketError.sendFailed(error.localizedDescription)
+        }
+    }
+    
+    /// Sends a ping frame to the server.
+    ///
+    /// The server should respond with a pong frame. This is typically
+    /// handled automatically when connection monitoring is enabled.
+    ///
+    /// - Throws: `WebSocketError.alreadyClosed` if the connection is closed,
+    ///   or `WebSocketError.sendFailed` if the ping fails.
+    public func ping() async throws {
+        guard let task = webSocketTask, isConnected else {
+            throw WebSocketError.alreadyClosed
+        }
+        
+        do {
+            try await task.sendPing { error in
+                // Pong received or error occurred
+                if let error = error {
+                    print("Ping failed: \(error)")
+                }
+            }
         } catch is CancellationError {
             throw WebSocketError.cancelled
         } catch {
@@ -278,6 +330,12 @@ public actor WebSocketTransport {
     /// Handles connection loss and triggers reconnection if enabled.
     private func handleDisconnection(reason: String) async {
         isConnected = false
+        
+        // Stop monitoring
+        if let monitor = connectionMonitor {
+            await monitor.stop()
+        }
+        
         messageContinuation?.finish()
         messageContinuation = nil
         
@@ -315,6 +373,69 @@ public actor WebSocketTransport {
     /// Indicates whether the WebSocket is currently connected.
     public var connectionState: Bool {
         isConnected
+    }
+    
+    // MARK: - Connection Monitoring
+    
+    /// Enables connection health monitoring using ping/pong frames.
+    ///
+    /// When enabled, the transport will periodically send ping frames
+    /// and expect pong responses. If a pong is not received within the
+    /// timeout period, the connection is considered unhealthy and
+    /// automatic reconnection is triggered (if enabled).
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// let transport = WebSocketTransport(url: wsURL)
+    /// transport.enableAutoReconnect()
+    /// transport.enableConnectionMonitoring(
+    ///     pingInterval: 30.0,  // Ping every 30 seconds
+    ///     pongTimeout: 10.0    // Expect pong within 10 seconds
+    /// )
+    /// try await transport.connect()
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - pingInterval: How often to send ping frames (default: 30 seconds).
+    ///   - pongTimeout: Maximum time to wait for pong response (default: 10 seconds).
+    nonisolated public func enableConnectionMonitoring(
+        pingInterval: TimeInterval = 30.0,
+        pongTimeout: TimeInterval = 10.0
+    ) {
+        Task {
+            await setMonitoringEnabled(true, pingInterval: pingInterval, pongTimeout: pongTimeout)
+        }
+    }
+    
+    /// Disables connection health monitoring.
+    nonisolated public func disableConnectionMonitoring() {
+        Task {
+            await setMonitoringEnabled(false)
+        }
+    }
+    
+    /// Internal method to set monitoring state (actor-isolated).
+    private func setMonitoringEnabled(
+        _ enabled: Bool,
+        pingInterval: TimeInterval = 30.0,
+        pongTimeout: TimeInterval = 10.0
+    ) {
+        self.monitoringEnabled = enabled
+        
+        if enabled {
+            self.connectionMonitor = WebSocketConnectionMonitor(
+                pingInterval: pingInterval,
+                pongTimeout: pongTimeout
+            )
+        } else {
+            if let monitor = connectionMonitor {
+                Task {
+                    await monitor.stop()
+                }
+            }
+            self.connectionMonitor = nil
+        }
     }
 }
 
