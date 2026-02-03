@@ -21,12 +21,12 @@ import Foundation
 /// - Supports cancellation
 /// - Provides connection state tracking
 /// - Integrates with `AuthManager` for automatic token refresh during reconnection
-public final class BaseWebSocketCall: WebSocketCall {
+public actor BaseWebSocketCall: WebSocketCall {
     
     // MARK: - Properties
     
     /// The request associated with this call.
-    public let request: Request
+    nonisolated public let request: Request
     
     /// The URLSession used for the WebSocket connection.
     private let session: URLSession
@@ -38,10 +38,10 @@ public final class BaseWebSocketCall: WebSocketCall {
     private let authManager: AuthManager?
     
     /// The active WebSocket transport, if connected.
-    private let transportState = ManagedCriticalState<WebSocketTransport?>(nil)
+    private var transport: WebSocketTransport?
     
     /// Cancellation state.
-    private let cancelledState = ManagedCriticalState(false)
+    private var isCancelledFlag = false
     
     // MARK: - Initialization
     
@@ -80,7 +80,7 @@ public final class BaseWebSocketCall: WebSocketCall {
     ///   or `WebSocketError` if the connection fails.
     public func connect() async throws -> WebSocketTransport {
         // Check cancellation
-        guard !isCancelled else {
+        guard !isCancelledFlag else {
             throw NetworkError.cancelled
         }
         
@@ -110,10 +110,10 @@ public final class BaseWebSocketCall: WebSocketCall {
         }
         
         // Store reference
-        transportState.withCriticalRegion { $0 = wsTransport }
+        transport = wsTransport
         
         // Check cancellation before connecting
-        guard !isCancelled else {
+        guard !isCancelledFlag else {
             throw NetworkError.cancelled
         }
         
@@ -128,20 +128,16 @@ public final class BaseWebSocketCall: WebSocketCall {
     /// Cancels the WebSocket call.
     ///
     /// If a connection is active, it will be closed gracefully.
-    public func cancel() {
-        cancelledState.withCriticalRegion { $0 = true }
-        
-        let currentTransport = transportState.withCriticalRegion { $0 }
-        Task {
-            await currentTransport?.close(
-                code: .goingAway,
-                reason: "Call cancelled"
-            )
-        }
+    public func cancel() async {
+        isCancelledFlag = true
+        await transport?.close(
+            code: .goingAway,
+            reason: "Call cancelled"
+        )
     }
     
     /// Indicates whether the call has been cancelled.
-    public var isCancelled: Bool {
-        cancelledState.withCriticalRegion { $0 }
+    public func isCancelled() async -> Bool {
+        isCancelledFlag
     }
 }

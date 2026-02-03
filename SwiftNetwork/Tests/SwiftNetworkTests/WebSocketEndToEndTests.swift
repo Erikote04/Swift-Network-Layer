@@ -32,7 +32,7 @@ struct WebSocketEndToEndTests {
         #expect(call.request.url.path == "/ws/echo")
         
         // Verify call is not cancelled
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
     }
     
     @Test("WebSocket with authentication flow")
@@ -57,7 +57,7 @@ struct WebSocketEndToEndTests {
         
         // Verify request is properly configured
         #expect(call.request.url.scheme == "wss")
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
     }
     
     @Test("WebSocket with auto-reconnect configuration")
@@ -109,9 +109,9 @@ struct WebSocketEndToEndTests {
         )
         
         // Cancel before connecting
-        call.cancel()
+        await call.cancel()
         
-        #expect(call.isCancelled)
+        #expect(await call.isCancelled())
         
         // Attempting to connect should throw
         await #expect(throws: NetworkError.self) {
@@ -148,7 +148,7 @@ struct WebSocketEndToEndTests {
         )
         
         // Verify call is properly configured
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
         #expect(await authManager.isAuthenticated)
     }
     

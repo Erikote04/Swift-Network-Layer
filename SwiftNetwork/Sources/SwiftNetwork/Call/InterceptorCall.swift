@@ -12,10 +12,12 @@ import Foundation
 /// `InterceptorCall` composes multiple `Interceptor` instances and
 /// ultimately delegates the request execution to a `Transport`. It supports
 /// progress reporting and streaming when the underlying transport supports them.
-final class InterceptorCall: BaseCall, ProgressCall, StreamingCall {
+struct InterceptorCall: ProgressCall, StreamingCall {
 
+    let request: Request
     private let interceptors: [Interceptor]
     private let transport: Transport
+    private let stateController = CallStateController()
 
     /// Creates a new interceptor-based call.
     ///
@@ -28,19 +30,15 @@ final class InterceptorCall: BaseCall, ProgressCall, StreamingCall {
         interceptors: [Interceptor],
         transport: Transport
     ) {
+        self.request = request
         self.interceptors = interceptors
         self.transport = transport
-        super.init(request: request)
     }
 
     /// Executes the interceptor chain and ultimately the transport.
     ///
     /// - Returns: The resulting `Response`.
     /// - Throws: Any error produced by an interceptor or the transport.
-    override func performExecute() async throws -> Response {
-        try await performExecute(progress: nil)
-    }
-    
     /// Executes the interceptor chain with progress reporting.
     ///
     /// The progress handler is passed through to the final transport call.
@@ -52,11 +50,11 @@ final class InterceptorCall: BaseCall, ProgressCall, StreamingCall {
     public func execute(
         progress: @escaping @Sendable (Progress) -> Void
     ) async throws -> Response {
-        try beginExecution()
+        try await stateController.beginExecution()
         
-        defer { finishExecution() }
+        defer { Task { await stateController.finishExecution() } }
 
-        if isCancelled {
+        if await stateController.isCancelled() {
             throw NetworkError.cancelled
         }
 
@@ -124,26 +122,18 @@ final class InterceptorCall: BaseCall, ProgressCall, StreamingCall {
             }
         }
     }
-    
-    // MARK: - Private Helpers (duplicated from BaseCall)
-    
-    private let state = ManagedCriticalState<CallState>(.idle)
-    
-    private func beginExecution() throws {
-        state.withCriticalRegion { currentState in
-            guard currentState == .idle else {
-                fatalError("Call can only be executed once")
-            }
 
-            currentState = .running
-        }
+    // MARK: - Call
+
+    func execute() async throws -> Response {
+        try await execute(progress: { _ in })
     }
 
-    private func finishExecution() {
-        state.withCriticalRegion { currentState in
-            if currentState != .cancelled {
-                currentState = .completed
-            }
-        }
+    func cancel() async {
+        await stateController.cancel()
+    }
+
+    func isCancelled() async -> Bool {
+        await stateController.isCancelled()
     }
 }

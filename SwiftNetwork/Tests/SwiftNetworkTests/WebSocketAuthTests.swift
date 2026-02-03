@@ -31,7 +31,7 @@ struct WebSocketAuthTests {
         // Note: Can't easily test actual connection without real WebSocket server
         // But we can verify the call is properly initialized
         #expect(call.request.url.scheme == "wss")
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
     }
     
     @Test("WebSocket transport accepts auth token provider")
@@ -78,7 +78,7 @@ struct WebSocketAuthTests {
         
         // Verify call is created correctly
         // Actual token retrieval happens during connect()
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
         #expect(await manager.isAuthenticated)
     }
     
@@ -137,9 +137,9 @@ struct WebSocketAuthTests {
             session: .shared
         )
         
-        call.cancel()
+        await call.cancel()
         
-        #expect(call.isCancelled)
+        #expect(await call.isCancelled())
         
         await #expect(throws: NetworkError.self) {
             _ = try await call.connect()

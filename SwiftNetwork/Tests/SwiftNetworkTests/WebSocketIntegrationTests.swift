@@ -24,7 +24,7 @@ struct WebSocketIntegrationTests {
         )
         
         #expect(call.request.url == url)
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
     }
     
     @Test("BaseWebSocketCall cancellation")
@@ -38,11 +38,11 @@ struct WebSocketIntegrationTests {
             tokenStore: nil
         )
         
-        #expect(!call.isCancelled)
+        #expect(await call.isCancelled() == false)
         
-        call.cancel()
+        await call.cancel()
         
-        #expect(call.isCancelled)
+        #expect(await call.isCancelled())
         
         // Connecting after cancel should throw
         await #expect(throws: NetworkError.self) {

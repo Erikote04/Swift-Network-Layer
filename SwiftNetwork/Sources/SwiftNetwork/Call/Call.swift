@@ -23,8 +23,8 @@ public protocol Call: Sendable {
     func execute() async throws -> Response
 
     /// Cancels the call.
-    func cancel()
+    func cancel() async
 
     /// Indicates whether the call has been cancelled.
-    var isCancelled: Bool { get }
+    func isCancelled() async -> Bool
 }

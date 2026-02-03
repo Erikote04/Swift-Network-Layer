@@ -12,9 +12,11 @@ import Foundation
 /// `TransportCall` bypasses interceptors and executes the request
 /// directly using the provided `Transport`. It supports progress reporting
 /// and streaming for uploads and downloads when the transport is `URLSessionTransport`.
-final class TransportCall: BaseCall, ProgressCall, StreamingCall {
+struct TransportCall: ProgressCall, StreamingCall {
 
     private let transport: Transport
+    let request: Request
+    private let stateController = CallStateController()
 
     /// Creates a new transport-backed call.
     ///
@@ -22,16 +24,24 @@ final class TransportCall: BaseCall, ProgressCall, StreamingCall {
     ///   - request: The request to execute.
     ///   - transport: The transport responsible for executing the request.
     init(request: Request, transport: Transport) {
+        self.request = request
         self.transport = transport
-        super.init(request: request)
     }
 
     /// Executes the request using the underlying transport.
     ///
     /// - Returns: The resulting `Response`.
     /// - Throws: Any error produced by the transport.
-    override func performExecute() async throws -> Response {
-        try await transport.execute(request)
+    func execute() async throws -> Response {
+        try await stateController.beginExecution()
+
+        defer { Task { await stateController.finishExecution() } }
+
+        if await stateController.isCancelled() {
+            throw NetworkError.cancelled
+        }
+
+        return try await transport.execute(request)
     }
     
     /// Executes the request with progress reporting.
@@ -45,13 +55,21 @@ final class TransportCall: BaseCall, ProgressCall, StreamingCall {
     public func execute(
         progress: @escaping @Sendable (Progress) -> Void
     ) async throws -> Response {
+        try await stateController.beginExecution()
+
+        defer { Task { await stateController.finishExecution() } }
+
+        if await stateController.isCancelled() {
+            throw NetworkError.cancelled
+        }
+
         // Check if transport supports progress
         if let urlSessionTransport = transport as? URLSessionTransport {
             return try await urlSessionTransport.execute(request, progress: progress)
         }
         
         // Fallback to regular execution
-        return try await execute()
+        return try await transport.execute(request)
     }
     
     /// Streams the response data as chunks.
@@ -89,5 +107,15 @@ final class TransportCall: BaseCall, ProgressCall, StreamingCall {
                 }
             }
         }
+    }
+
+    // MARK: - Call
+
+    func cancel() async {
+        await stateController.cancel()
+    }
+
+    func isCancelled() async -> Bool {
+        await stateController.isCancelled()
     }
 }

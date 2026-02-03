@@ -14,18 +14,12 @@ import Foundation
 ///
 /// This type is used internally by `NetworkClient` when deduplication
 /// is enabled in the configuration.
-final class DeduplicatedCall: Call {
+struct DeduplicatedCall: Call {
     
     private let baseCall: Call
     private let deduplicator: RequestDeduplicator
     
-    var request: Request {
-        baseCall.request
-    }
-    
-    var isCancelled: Bool {
-        baseCall.isCancelled
-    }
+    var request: Request { baseCall.request }
     
     /// Creates a new deduplicated call wrapper.
     ///
@@ -46,7 +40,11 @@ final class DeduplicatedCall: Call {
         }
     }
     
-    func cancel() {
-        baseCall.cancel()
+    func cancel() async {
+        await baseCall.cancel()
+    }
+
+    func isCancelled() async -> Bool {
+        await baseCall.isCancelled()
     }
 }
