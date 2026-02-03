@@ -8,17 +8,15 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Bindable var appState: AppState
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        NavigationStack {
+            RepoListView(client: appState.client)
         }
-        .padding()
     }
 }
 
 #Preview {
-    ContentView()
+    ContentView(appState: AppState())
 }

@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct SwiftNetworkSampleAppApp: App {
+    @State private var appState = AppState()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentView(appState: appState)
         }
     }
 }
