@@ -8,21 +8,23 @@
 import Foundation
 import SwiftNetwork
 
-struct HeaderInjectionInterceptor: RequestInterceptor {
+struct HeaderInjectionInterceptor: Interceptor {
     let name: String
     let value: String
 
-    func interceptRequest(_ request: Request) async throws -> Request {
-        var headers = request.headers
+    func intercept(_ chain: InterceptorChainProtocol) async throws -> Response {
+        var headers = chain.request.headers
         headers[name] = value
-        return Request(
-            method: request.method,
-            url: request.url,
+        let updated = Request(
+            method: chain.request.method,
+            url: chain.request.url,
             headers: headers,
-            body: request.body,
-            timeout: request.timeout,
-            cachePolicy: request.cachePolicy,
-            priority: request.priority
+            body: chain.request.body,
+            timeout: chain.request.timeout,
+            cachePolicy: chain.request.cachePolicy,
+            priority: chain.request.priority
         )
+
+        return try await chain.proceed(updated)
     }
 }
