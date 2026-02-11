@@ -38,6 +38,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.metrics) {
                     FeatureRow(title: "Metrics", subtitle: "Aggregate request statistics")
                 }
+                NavigationLink(value: Feature.webSockets) {
+                    FeatureRow(title: "WebSockets", subtitle: "Connect, send, and receive")
+                }
                 NavigationLink(value: Feature.auth) {
                     FeatureRow(title: "Auth", subtitle: "TokenStore + AuthInterceptor")
                 }
@@ -62,6 +65,8 @@ struct FeatureListView: View {
                 StreamingDemoView(client: client)
             case .metrics:
                 MetricsDemoView()
+            case .webSockets:
+                WebSocketDemoView(client: client)
             case .auth:
                 AuthDemoView()
             }
@@ -78,6 +83,7 @@ private enum Feature: Hashable {
     case progress
     case streaming
     case metrics
+    case webSockets
     case auth
 }
 
