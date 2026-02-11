@@ -29,6 +29,12 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.retry) {
                     FeatureRow(title: "Retry", subtitle: "Automatic retries with metrics")
                 }
+                NavigationLink(value: Feature.progress) {
+                    FeatureRow(title: "Progress", subtitle: "Upload progress callbacks")
+                }
+                NavigationLink(value: Feature.streaming) {
+                    FeatureRow(title: "Streaming", subtitle: "Incremental response stream")
+                }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
@@ -44,6 +50,10 @@ struct FeatureListView: View {
                 InterceptorsDemoView()
             case .retry:
                 RetryDemoView()
+            case .progress:
+                ProgressDemoView(client: client)
+            case .streaming:
+                StreamingDemoView(client: client)
             }
         }
     }
@@ -55,6 +65,8 @@ private enum Feature: Hashable {
     case caching
     case interceptors
     case retry
+    case progress
+    case streaming
 }
 
 private struct FeatureRow: View {
