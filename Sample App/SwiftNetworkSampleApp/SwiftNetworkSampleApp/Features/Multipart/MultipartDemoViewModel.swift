@@ -45,11 +45,21 @@ final class MultipartDemoViewModel {
                 return
             }
 
-            let response = try await progressCall.execute { [weak self] (progress: SwiftNetwork.Progress) in
-                Task { @MainActor in
-                    guard let self else { return }
-                    self.uploadProgress = progress.fractionCompleted
+            let progressAccumulator = ProgressAccumulator()
+            let progressStream = await progressAccumulator.stream()
+            let progressTask = Task { @MainActor [weak self] in
+                for await value in progressStream {
+                    self?.uploadProgress = value
                 }
+            }
+
+            defer {
+                Task { await progressAccumulator.finish() }
+                progressTask.cancel()
+            }
+
+            let response = try await progressCall.execute { progress in
+                Task { await progressAccumulator.update(progress.fractionCompleted) }
             }
 
             let body = response.body.flatMap { String(data: $0, encoding: .utf8) } ?? "No body"
@@ -75,5 +85,24 @@ final class MultipartDemoViewModel {
         )
 
         return [note, metadata, filePart]
+    }
+}
+
+private actor ProgressAccumulator {
+    private var continuation: AsyncStream<Double>.Continuation?
+
+    func stream() -> AsyncStream<Double> {
+        AsyncStream { continuation in
+            self.continuation = continuation
+        }
+    }
+
+    func update(_ value: Double) {
+        continuation?.yield(value)
+    }
+
+    func finish() {
+        continuation?.finish()
+        continuation = nil
     }
 }
