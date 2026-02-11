@@ -35,6 +35,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.multipart) {
                     FeatureRow(title: "Multipart", subtitle: "Multipart upload + progress")
                 }
+                NavigationLink(value: Feature.requestBodies) {
+                    FeatureRow(title: "Request Bodies", subtitle: "JSON, form, raw data")
+                }
                 NavigationLink(value: Feature.progress) {
                     FeatureRow(title: "Progress", subtitle: "Upload progress callbacks")
                 }
@@ -75,6 +78,8 @@ struct FeatureListView: View {
                 RetryDemoView()
             case .multipart:
                 MultipartDemoView()
+            case .requestBodies:
+                RequestBodyDemoView()
             case .progress:
                 ProgressDemoView(client: client)
             case .streaming:
@@ -102,6 +107,7 @@ private enum Feature: Hashable {
     case requestResponseInterceptors
     case retry
     case multipart
+    case requestBodies
     case progress
     case streaming
     case metrics
