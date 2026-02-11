@@ -39,11 +39,16 @@ final class MultipartDemoViewModel {
         let client = NetworkClient(configuration: NetworkClientConfiguration(baseURL: baseURL))
 
         do {
-            let response = try await client.newProgressCall(request).execute { [weak self] progress in
+            let call = client.newCall(request)
+            guard let progressCall = call as? ProgressCall else {
+                state = .failed("Progress reporting is unavailable for this request.")
+                return
+            }
+
+            let response = try await progressCall.execute { [weak self] (progress: SwiftNetwork.Progress) in
                 Task { @MainActor in
                     guard let self else { return }
-                    let total = max(progress.totalUnitCount, 1)
-                    self.uploadProgress = Double(progress.completedUnitCount) / Double(total)
+                    self.uploadProgress = progress.fractionCompleted
                 }
             }
 
