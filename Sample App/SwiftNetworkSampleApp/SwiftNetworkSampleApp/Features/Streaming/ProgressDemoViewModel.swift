@@ -47,7 +47,7 @@ final class ProgressDemoViewModel {
             let response = try await progressCall.execute { progress in
                 let fraction = progress.fractionCompleted
                 Task { @MainActor in
-                    state = .uploading(fraction)
+                    self.state = .uploading(fraction)
                 }
             }
 
