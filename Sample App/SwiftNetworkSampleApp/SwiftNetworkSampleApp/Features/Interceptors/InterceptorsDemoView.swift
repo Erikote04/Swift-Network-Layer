@@ -9,11 +9,7 @@ import SwiftUI
 import SwiftNetwork
 
 struct InterceptorsDemoView: View {
-    @State private var viewModel: InterceptorsDemoViewModel
-
-    init(client: NetworkClient) {
-        _viewModel = State(initialValue: InterceptorsDemoViewModel(client: client))
-    }
+    @State private var viewModel = InterceptorsDemoViewModel()
 
     var body: some View {
         List {
@@ -78,6 +74,6 @@ struct InterceptorsDemoView: View {
 
 #Preview {
     NavigationStack {
-        InterceptorsDemoView(client: NetworkClient())
+        InterceptorsDemoView()
     }
 }

@@ -9,11 +9,7 @@ import SwiftUI
 import SwiftNetwork
 
 struct RetryDemoView: View {
-    @State private var viewModel: RetryDemoViewModel
-
-    init(client: NetworkClient) {
-        _viewModel = State(initialValue: RetryDemoViewModel(client: client))
-    }
+    @State private var viewModel = RetryDemoViewModel()
 
     var body: some View {
         List {
@@ -77,6 +73,6 @@ struct RetryDemoView: View {
 
 #Preview {
     NavigationStack {
-        RetryDemoView(client: NetworkClient())
+        RetryDemoView()
     }
 }
