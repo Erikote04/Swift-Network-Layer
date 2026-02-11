@@ -38,6 +38,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.metrics) {
                     FeatureRow(title: "Metrics", subtitle: "Aggregate request statistics")
                 }
+                NavigationLink(value: Feature.auth) {
+                    FeatureRow(title: "Auth", subtitle: "TokenStore + AuthInterceptor")
+                }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
@@ -59,6 +62,8 @@ struct FeatureListView: View {
                 StreamingDemoView(client: client)
             case .metrics:
                 MetricsDemoView()
+            case .auth:
+                AuthDemoView()
             }
         }
     }
@@ -73,6 +78,7 @@ private enum Feature: Hashable {
     case progress
     case streaming
     case metrics
+    case auth
 }
 
 private struct FeatureRow: View {
