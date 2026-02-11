@@ -26,6 +26,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.interceptors) {
                     FeatureRow(title: "Interceptors", subtitle: "Conditional + prioritized header")
                 }
+                NavigationLink(value: Feature.requestResponseInterceptors) {
+                    FeatureRow(title: "Req/Res Interceptors", subtitle: "Request + response interceptors")
+                }
                 NavigationLink(value: Feature.retry) {
                     FeatureRow(title: "Retry", subtitle: "Automatic retries with metrics")
                 }
@@ -63,6 +66,8 @@ struct FeatureListView: View {
                 CacheDemoView()
             case .interceptors:
                 InterceptorsDemoView()
+            case .requestResponseInterceptors:
+                RequestResponseInterceptorsDemoView()
             case .retry:
                 RetryDemoView()
             case .progress:
@@ -89,6 +94,7 @@ private enum Feature: Hashable {
     case requestBuilder
     case caching
     case interceptors
+    case requestResponseInterceptors
     case retry
     case progress
     case streaming
