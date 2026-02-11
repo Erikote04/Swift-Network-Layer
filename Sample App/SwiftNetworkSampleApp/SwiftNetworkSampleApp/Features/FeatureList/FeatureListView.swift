@@ -41,6 +41,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.webSockets) {
                     FeatureRow(title: "WebSockets", subtitle: "Connect, send, and receive")
                 }
+                NavigationLink(value: Feature.performance) {
+                    FeatureRow(title: "Performance", subtitle: "Deduplication + priority")
+                }
                 NavigationLink(value: Feature.auth) {
                     FeatureRow(title: "Auth", subtitle: "TokenStore + AuthInterceptor")
                 }
@@ -67,6 +70,8 @@ struct FeatureListView: View {
                 MetricsDemoView()
             case .webSockets:
                 WebSocketDemoView(client: client)
+            case .performance:
+                PerformanceDemoView()
             case .auth:
                 AuthDemoView()
             }
@@ -84,6 +89,7 @@ private enum Feature: Hashable {
     case streaming
     case metrics
     case webSockets
+    case performance
     case auth
 }
 
