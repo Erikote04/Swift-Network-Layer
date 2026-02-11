@@ -13,12 +13,13 @@ struct AuthDemoView: View {
 
     var body: some View {
         List {
+            Section("Overview") {
+                Text("This screen shows token storage + AuthInterceptor with GitHub. Use the Apple, Google, and Refresh demos for OAuth flows.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+
             tokenSection
-            oauthSetupSection
-            oauthActionsSection
-            oauthStatusSection
-            refreshSetupSection
-            refreshActionsSection
             resultSection
         }
         .navigationTitle("Auth")
@@ -54,95 +55,6 @@ struct AuthDemoView: View {
         }
     }
 
-    private var oauthSetupSection: some View {
-        Section("OAuth Setup (Google)") {
-            Text("Use your Google OAuth client to get refresh tokens for the demo.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            TextField("Client ID", text: $viewModel.googleClientId)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            TextField("Client Secret (optional)", text: $viewModel.googleClientSecret)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            TextField("Redirect URI", text: $viewModel.googleRedirectURI)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            TextField("Scopes (space-separated)", text: $viewModel.googleScopes)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-        }
-    }
-
-    private var oauthActionsSection: some View {
-        Section("OAuth Actions") {
-            Button("Sign in with Apple") {
-                Task { await viewModel.signInWithApple() }
-            }
-
-            Button("Sign in with Google") {
-                Task { await viewModel.signInWithGoogle() }
-            }
-
-            Button("Sign out") {
-                Task { await viewModel.logoutOAuth() }
-            }
-            .foregroundStyle(.red)
-        }
-    }
-
-    private var oauthStatusSection: some View {
-        Section("OAuth Status") {
-            Text(viewModel.oauthStatus)
-                .font(.footnote)
-                .textSelection(.enabled)
-        }
-    }
-
-    private var refreshSetupSection: some View {
-        Section("Token Refresh Setup") {
-            Text("Seed an expired access token to force refresh on the next requests.")
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            TextField("Access Token", text: $viewModel.seedAccessToken)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            TextField("Refresh Token", text: $viewModel.seedRefreshToken)
-                .textInputAutocapitalization(.never)
-                .autocorrectionDisabled()
-
-            TextField("Expires In (seconds)", text: $viewModel.seedExpiresInSeconds)
-                .keyboardType(.numberPad)
-        }
-    }
-
-    private var refreshActionsSection: some View {
-        Section("Token Refresh Demo") {
-            Button("Configure Refresh Provider") {
-                Task { await viewModel.configureGoogleRefreshProvider() }
-            }
-
-            Button("Seed Expired Credentials") {
-                Task { await viewModel.seedExpiredCredentials() }
-            }
-
-            Button("Run Concurrent Refresh Demo") {
-                Task { await viewModel.runConcurrentRefreshDemo() }
-            }
-
-            Text(viewModel.refreshStatus)
-                .font(.footnote)
-                .foregroundStyle(.secondary)
-            Text("Refreshes performed: \(viewModel.refreshCount)")
-                .font(.footnote)
-        }
-    }
 
     @ViewBuilder
     private var resultSection: some View {

@@ -59,6 +59,15 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.auth) {
                     FeatureRow(title: "Auth", subtitle: "TokenStore + AuthInterceptor")
                 }
+                NavigationLink(value: Feature.appleSignIn) {
+                    FeatureRow(title: "Apple Sign-In", subtitle: "Sign in with Apple flow")
+                }
+                NavigationLink(value: Feature.googleSignIn) {
+                    FeatureRow(title: "Google Sign-In", subtitle: "OAuth sign-in flow")
+                }
+                NavigationLink(value: Feature.tokenRefresh) {
+                    FeatureRow(title: "Token Refresh", subtitle: "Deduped refresh calls")
+                }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
@@ -94,6 +103,12 @@ struct FeatureListView: View {
                 SecurityDemoView()
             case .auth:
                 AuthDemoView()
+            case .appleSignIn:
+                AppleSignInView()
+            case .googleSignIn:
+                GoogleSignInView()
+            case .tokenRefresh:
+                TokenRefreshDemoView()
             }
         }
     }
@@ -115,6 +130,9 @@ private enum Feature: Hashable {
     case performance
     case security
     case auth
+    case appleSignIn
+    case googleSignIn
+    case tokenRefresh
 }
 
 private struct FeatureRow: View {
