@@ -17,13 +17,22 @@ struct AppleSignInView: View {
                 Text(viewModel.status)
                     .font(.footnote)
                     .textSelection(.enabled)
+                Text(viewModel.keychainValue)
+                    .font(.footnote)
+                    .textSelection(.enabled)
             }
 
             Section("Actions") {
-                AppleSignInButton {
-                    Task { await viewModel.signIn() }
+                if viewModel.hasStoredToken {
+                    Button("Re-authenticate with Apple") {
+                        Task { await viewModel.signIn() }
+                    }
+                } else {
+                    AppleSignInButton {
+                        Task { await viewModel.signIn() }
+                    }
+                    .frame(height: 44)
                 }
-                .frame(height: 44)
 
                 Button("Sign out") {
                     Task { await viewModel.signOut() }
@@ -32,12 +41,18 @@ struct AppleSignInView: View {
             }
 
             Section("Notes") {
-                Text("Uses the standard Sign in with Apple button and requires the Sign in with Apple capability.")
+                Text("If a token is cached, you can keep using it for your own APIs without signing in again. Re-authenticate only when you need a fresh identity token.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
+                Text("Best practice: exchange the Apple identity token with your backend and store your own session token.")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }
         }
         .navigationTitle("Apple Sign-In")
+        .task {
+            await viewModel.loadStatus()
+        }
     }
 }
 
