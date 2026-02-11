@@ -10,61 +10,34 @@ import SwiftNetwork
 
 struct FeatureListView: View {
     let client: NetworkClient
+    @State private var sortOrder: FeatureSortOrder = .alphabetical
 
     var body: some View {
         List {
-            Section("Core") {
-                NavigationLink(value: Feature.repos) {
-                    FeatureRow(title: "Repository List", subtitle: "Basic GET + decoding")
-                }
-                NavigationLink(value: Feature.requestBuilder) {
-                    FeatureRow(title: "Request Builder", subtitle: "Headers + timeout + query")
-                }
-                NavigationLink(value: Feature.caching) {
-                    FeatureRow(title: "Caching", subtitle: "Memory, disk, and hybrid cache")
-                }
-                NavigationLink(value: Feature.interceptors) {
-                    FeatureRow(title: "Interceptors", subtitle: "Conditional + prioritized header")
-                }
-                NavigationLink(value: Feature.requestResponseInterceptors) {
-                    FeatureRow(title: "Req/Res Interceptors", subtitle: "Request + response interceptors")
-                }
-                NavigationLink(value: Feature.retry) {
-                    FeatureRow(title: "Retry", subtitle: "Automatic retries with metrics")
-                }
-                NavigationLink(value: Feature.multipart) {
-                    FeatureRow(title: "Multipart", subtitle: "Multipart upload + progress")
-                }
-                NavigationLink(value: Feature.requestBodies) {
-                    FeatureRow(title: "Request Bodies", subtitle: "JSON, form, raw data")
-                }
-                NavigationLink(value: Feature.progress) {
-                    FeatureRow(title: "Progress", subtitle: "Upload progress callbacks")
-                }
-                NavigationLink(value: Feature.streaming) {
-                    FeatureRow(title: "Streaming", subtitle: "Incremental response stream")
-                }
-                NavigationLink(value: Feature.metrics) {
-                    FeatureRow(title: "Metrics", subtitle: "Aggregate request statistics")
-                }
-                NavigationLink(value: Feature.webSockets) {
-                    FeatureRow(title: "WebSockets", subtitle: "Connect, send, and receive")
-                }
-                NavigationLink(value: Feature.performance) {
-                    FeatureRow(title: "Performance", subtitle: "Deduplication + priority")
-                }
-                NavigationLink(value: Feature.security) {
-                    FeatureRow(title: "Security", subtitle: "Certificate pinning")
-                }
-                NavigationLink(value: Feature.auth) {
-                    FeatureRow(title: "Auth", subtitle: "TokenStore + AuthInterceptor")
-                }
-                NavigationLink(value: Feature.appleSignIn) {
-                    FeatureRow(title: "Apple Sign-In", subtitle: "Sign in with Apple flow")
+            Section("Features") {
+                ForEach(sortedFeatures, id: \.feature) { item in
+                    NavigationLink(value: item.feature) {
+                        FeatureRow(title: item.title, subtitle: item.subtitle)
+                    }
                 }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    ForEach(FeatureSortOrder.allCases, id: \.self) { order in
+                        Button {
+                            sortOrder = order
+                        } label: {
+                            Label(order.title, systemImage: order.symbolName)
+                        }
+                    }
+                } label: {
+                    Label("Sort", systemImage: "arrow.up.arrow.down")
+                }
+            }
+        }
         .navigationDestination(for: Feature.self) { feature in
             switch feature {
             case .repos:
@@ -102,6 +75,15 @@ struct FeatureListView: View {
             }
         }
     }
+
+    private var sortedFeatures: [FeatureItem] {
+        switch sortOrder {
+        case .alphabetical:
+            return featureItems.sorted { $0.title.localizedStandardCompare($1.title) == .orderedAscending }
+        case .easeToAdvanced:
+            return featureItems.sorted { $0.difficulty < $1.difficulty }
+        }
+    }
 }
 
 private enum Feature: Hashable {
@@ -122,6 +104,55 @@ private enum Feature: Hashable {
     case auth
     case appleSignIn
 }
+
+private enum FeatureSortOrder: CaseIterable {
+    case alphabetical
+    case easeToAdvanced
+
+    var title: String {
+        switch self {
+        case .alphabetical:
+            return "Alphabetical"
+        case .easeToAdvanced:
+            return "Increasing Difficulty"
+        }
+    }
+
+    var symbolName: String {
+        switch self {
+        case .alphabetical:
+            return "textformat.characters.arrow.left.and.right"
+        case .easeToAdvanced:
+            return "arrow.up.right"
+        }
+    }
+}
+
+private struct FeatureItem: Hashable {
+    let feature: Feature
+    let title: String
+    let subtitle: String
+    let difficulty: Int
+}
+
+private let featureItems: [FeatureItem] = [
+    FeatureItem(feature: .appleSignIn, title: "Apple Sign-In", subtitle: "Sign in with Apple flow", difficulty: 7),
+    FeatureItem(feature: .auth, title: "Auth", subtitle: "TokenStore + AuthInterceptor", difficulty: 3),
+    FeatureItem(feature: .caching, title: "Caching", subtitle: "Memory, disk, and hybrid cache", difficulty: 4),
+    FeatureItem(feature: .interceptors, title: "Interceptors", subtitle: "Conditional + prioritized header", difficulty: 4),
+    FeatureItem(feature: .metrics, title: "Metrics", subtitle: "Aggregate request statistics", difficulty: 4),
+    FeatureItem(feature: .multipart, title: "Multipart", subtitle: "Multipart upload + progress", difficulty: 5),
+    FeatureItem(feature: .performance, title: "Performance", subtitle: "Deduplication + priority", difficulty: 6),
+    FeatureItem(feature: .progress, title: "Progress", subtitle: "Upload progress callbacks", difficulty: 4),
+    FeatureItem(feature: .repos, title: "Repository List", subtitle: "Basic GET + decoding", difficulty: 1),
+    FeatureItem(feature: .requestBodies, title: "Request Bodies", subtitle: "JSON, form, raw data", difficulty: 2),
+    FeatureItem(feature: .requestBuilder, title: "Request Builder", subtitle: "Headers + timeout + query", difficulty: 2),
+    FeatureItem(feature: .requestResponseInterceptors, title: "Req/Res Interceptors", subtitle: "Request + response interceptors", difficulty: 5),
+    FeatureItem(feature: .retry, title: "Retry", subtitle: "Automatic retries with metrics", difficulty: 5),
+    FeatureItem(feature: .security, title: "Security", subtitle: "Certificate pinning", difficulty: 6),
+    FeatureItem(feature: .streaming, title: "Streaming", subtitle: "Incremental response stream", difficulty: 5),
+    FeatureItem(feature: .webSockets, title: "WebSockets", subtitle: "Connect, send, and receive", difficulty: 6)
+]
 
 private struct FeatureRow: View {
     let title: String
