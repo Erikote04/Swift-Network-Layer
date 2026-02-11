@@ -45,8 +45,9 @@ final class InterceptorsDemoViewModel {
 
     private func configuredClient() -> NetworkClient {
         let injectHeader = HeaderInjectionInterceptor(name: "X-Demo-Header", value: "swift-network")
+        let adapted = RequestResponseInterceptorAdapter(requestInterceptor: injectHeader)
         let conditional = ConditionalInterceptor(
-            interceptor: injectHeader,
+            interceptor: adapted,
             condition: .custom { [shouldInjectHeader] _ in
                 shouldInjectHeader
             }

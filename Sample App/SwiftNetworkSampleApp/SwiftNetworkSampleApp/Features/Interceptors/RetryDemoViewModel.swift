@@ -40,8 +40,9 @@ final class RetryDemoViewModel {
             let config = NetworkClientConfiguration(
                 baseURL: baseURL,
                 timeout: 10,
-                interceptors: [RetryInterceptor(maxRetries: 2, delay: 0.2)],
-                metricsCollectors: [metrics]
+                interceptors: [
+                    RetryInterceptor(maxRetries: 2, delay: 0.2, metrics: metrics)
+                ]
             )
             let client = NetworkClient(configuration: config)
 
