@@ -35,6 +35,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.streaming) {
                     FeatureRow(title: "Streaming", subtitle: "Incremental response stream")
                 }
+                NavigationLink(value: Feature.metrics) {
+                    FeatureRow(title: "Metrics", subtitle: "Aggregate request statistics")
+                }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
@@ -54,6 +57,8 @@ struct FeatureListView: View {
                 ProgressDemoView(client: client)
             case .streaming:
                 StreamingDemoView(client: client)
+            case .metrics:
+                MetricsDemoView()
             }
         }
     }
@@ -67,6 +72,7 @@ private enum Feature: Hashable {
     case retry
     case progress
     case streaming
+    case metrics
 }
 
 private struct FeatureRow: View {
