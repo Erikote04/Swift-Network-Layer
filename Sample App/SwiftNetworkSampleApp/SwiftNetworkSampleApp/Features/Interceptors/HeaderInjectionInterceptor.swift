@@ -12,7 +12,7 @@ struct HeaderInjectionInterceptor: RequestInterceptor {
     let name: String
     let value: String
 
-    func intercept(_ request: Request) async throws -> Request {
+    func interceptRequest(_ request: Request) async throws -> Request {
         var headers = request.headers
         headers[name] = value
         return Request(
