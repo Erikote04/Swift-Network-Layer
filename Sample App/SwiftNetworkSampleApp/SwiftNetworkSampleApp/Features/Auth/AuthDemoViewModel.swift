@@ -107,13 +107,13 @@ final class AuthDemoViewModel {
             )
             let credentials = try await authManager.login(provider: provider)
             oauthStatus = formatAuthStatus(credentials: credentials)
-            configureGoogleRefreshProvider()
+            await configureGoogleRefreshProvider()
         } catch {
             oauthStatus = "Google sign-in failed: \(error.localizedDescription)"
         }
     }
 
-    func configureGoogleRefreshProvider() {
+    func configureGoogleRefreshProvider() async {
         guard !googleClientId.isEmpty else {
             refreshStatus = "Missing Google client ID"
             return
@@ -123,7 +123,7 @@ final class AuthDemoViewModel {
         let clientSecret = googleClientSecret.isEmpty ? nil : googleClientSecret
         let service = GoogleTokenRefreshService(clientId: clientId, clientSecret: clientSecret)
 
-        authManager.setRefreshProvider { [refreshCounter] refreshToken in
+        await authManager.setRefreshProvider { [refreshCounter] refreshToken in
             await refreshCounter.increment()
             let response = try await service.refresh(refreshToken: refreshToken)
             return AuthCredentials(
@@ -198,7 +198,7 @@ final class AuthDemoViewModel {
     }
 
     private func formatAuthStatus(credentials: AuthCredentials) -> String {
-        let expiresIn = credentials.expiration?.remainingTime ?? 0
+        let expiresIn = credentials.expiration?.expiresAt.timeIntervalSinceNow ?? 0
         return "Provider: \(credentials.provider) | Expires in: \(Int(expiresIn))s"
     }
 }

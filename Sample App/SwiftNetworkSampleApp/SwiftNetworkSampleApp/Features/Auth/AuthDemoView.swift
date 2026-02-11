@@ -125,7 +125,7 @@ struct AuthDemoView: View {
     private var refreshActionsSection: some View {
         Section("Token Refresh Demo") {
             Button("Configure Refresh Provider") {
-                viewModel.configureGoogleRefreshProvider()
+                Task { await viewModel.configureGoogleRefreshProvider() }
             }
 
             Button("Seed Expired Credentials") {
