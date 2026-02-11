@@ -66,8 +66,6 @@ struct FeatureListView: View {
                 WebSocketDemoView(client: client)
             case .performance:
                 PerformanceDemoView()
-            case .security:
-                SecurityDemoView()
             case .auth:
                 AuthDemoView()
             case .appleSignIn:
@@ -100,7 +98,6 @@ private enum Feature: Hashable {
     case metrics
     case webSockets
     case performance
-    case security
     case auth
     case appleSignIn
 }
@@ -149,7 +146,6 @@ private let featureItems: [FeatureItem] = [
     FeatureItem(feature: .requestBuilder, title: "Request Builder", subtitle: "Headers + timeout + query", difficulty: 2),
     FeatureItem(feature: .requestResponseInterceptors, title: "Req/Res Interceptors", subtitle: "Request + response interceptors", difficulty: 5),
     FeatureItem(feature: .retry, title: "Retry", subtitle: "Automatic retries with metrics", difficulty: 5),
-    FeatureItem(feature: .security, title: "Security", subtitle: "Certificate pinning", difficulty: 6),
     FeatureItem(feature: .streaming, title: "Streaming", subtitle: "Incremental response stream", difficulty: 5),
     FeatureItem(feature: .webSockets, title: "WebSockets", subtitle: "Connect, send, and receive", difficulty: 6)
 ]

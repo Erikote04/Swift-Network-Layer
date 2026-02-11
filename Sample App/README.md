@@ -140,14 +140,6 @@ Steps:
 1. Open **Retry**.
 2. Trigger a request designed to fail and watch retry behavior.
 
-### Security
-
-Goal: Show pinning configuration and behavior.
-
-Steps:
-1. Open **Security**.
-2. Toggle pinning and observe request results.
-
 ### Streaming
 
 Goal: Stream response data incrementally.
