@@ -54,8 +54,9 @@ final class WebSocketDemoViewModel {
             transport.enableConnectionMonitoring(pingInterval: 20, pongTimeout: 8)
             await transport.enableAutoReconnect(maxAttempts: 3)
 
+            let urlString = await transport.url.absoluteString
             state = .connected
-            appendSystemMessage("Connected to \(transport.url.absoluteString)")
+            appendSystemMessage("Connected to \(urlString)")
             startReceivingMessages(from: transport)
         } catch {
             state = .disconnected
