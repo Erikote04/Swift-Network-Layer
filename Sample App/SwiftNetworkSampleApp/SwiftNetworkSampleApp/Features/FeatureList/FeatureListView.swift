@@ -44,6 +44,9 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.performance) {
                     FeatureRow(title: "Performance", subtitle: "Deduplication + priority")
                 }
+                NavigationLink(value: Feature.security) {
+                    FeatureRow(title: "Security", subtitle: "Certificate pinning")
+                }
                 NavigationLink(value: Feature.auth) {
                     FeatureRow(title: "Auth", subtitle: "TokenStore + AuthInterceptor")
                 }
@@ -72,6 +75,8 @@ struct FeatureListView: View {
                 WebSocketDemoView(client: client)
             case .performance:
                 PerformanceDemoView()
+            case .security:
+                SecurityDemoView()
             case .auth:
                 AuthDemoView()
             }
@@ -90,6 +95,7 @@ private enum Feature: Hashable {
     case metrics
     case webSockets
     case performance
+    case security
     case auth
 }
 
