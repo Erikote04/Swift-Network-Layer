@@ -23,6 +23,12 @@ struct FeatureListView: View {
                 NavigationLink(value: Feature.caching) {
                     FeatureRow(title: "Caching", subtitle: "Memory, disk, and hybrid cache")
                 }
+                NavigationLink(value: Feature.interceptors) {
+                    FeatureRow(title: "Interceptors", subtitle: "Conditional + prioritized header")
+                }
+                NavigationLink(value: Feature.retry) {
+                    FeatureRow(title: "Retry", subtitle: "Automatic retries with metrics")
+                }
             }
         }
         .navigationTitle("SwiftNetwork Samples")
@@ -34,6 +40,10 @@ struct FeatureListView: View {
                 RequestBuilderDemoView(client: client)
             case .caching:
                 CacheDemoView()
+            case .interceptors:
+                InterceptorsDemoView()
+            case .retry:
+                RetryDemoView()
             }
         }
     }
@@ -43,6 +53,8 @@ private enum Feature: Hashable {
     case repos
     case requestBuilder
     case caching
+    case interceptors
+    case retry
 }
 
 private struct FeatureRow: View {
