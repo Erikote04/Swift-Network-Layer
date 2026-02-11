@@ -58,7 +58,7 @@ final class InterceptorsDemoViewModel {
             baseURL: baseURL,
             defaultHeaders: ["Accept": "application/json"],
             timeout: 20,
-            interceptors: [prioritized]
+            prioritizedInterceptors: [prioritized]
         )
 
         return NetworkClient(configuration: config)
