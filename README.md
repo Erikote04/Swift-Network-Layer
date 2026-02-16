@@ -5,7 +5,7 @@ A modern, Swift-native networking layer designed for simplicity, extensibility, 
 [![Swift Version](https://img.shields.io/badge/Swift-6.1+-orange.svg)](https://swift.org)
 [![Platforms](https://img.shields.io/badge/Platforms-iOS%2016+%20|%20macOS%2013+-blue.svg)](https://swift.org)
 [![SPM Compatible](https://img.shields.io/badge/SPM-compatible-brightgreen.svg)](https://swift.org/package-manager/)
-[![Documentation](https://img.shields.io/badge/Documentation-Available-brightgreen.svg)](https://erikote04.github.io/Swift-Network-Layer/documentation/swiftnetwork/)
+[![Documentation](https://img.shields.io/badge/Documentation-Available-brightgreen.svg)](https://erikote04.github.io/SwiftNetwork/documentation/swiftnetwork/)
 
 ## Features
 
@@ -61,14 +61,14 @@ Add SwiftNetwork to your `Package.swift` file:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Erikote04/Swift-Network-Layer.git")
+    .package(url: "https://github.com/Erikote04/SwiftNetwork.git")
 ]
 ```
 
 Or add it through Xcode:
 
 1. File > Add Package Dependencies...
-2. Enter the repository URL: `https://github.com/Erikote04/Swift-Network-Layer.git`
+2. Enter the repository URL: `https://github.com/Erikote04/SwiftNetwork.git`
 3. Select `main` as target branch
 
 ## Quick Start
@@ -423,7 +423,7 @@ do {
 
 ## Documentation
 
-Explore the **[Documentation](https://erikote04.github.io/Swift-Network-Layer/documentation/swiftnetwork/)**. You can also launch the demo app from the Sample App folder and review the Sample App README for a walkthrough.
+Explore the **[Documentation](https://erikote04.github.io/SwiftNetwork/documentation/swiftnetwork/)**. You can also launch the demo app from the Sample App folder and review the Sample App README for a walkthrough.
 
 ## Testing
 
