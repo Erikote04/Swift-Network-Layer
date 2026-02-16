@@ -47,6 +47,7 @@ A modern, Swift-native networking layer designed for simplicity, extensibility, 
   - [Metrics](#metrics)
 - [Error Handling](#error-handling)
 - [Documentation](#documentation)
+- [Testing](#testing)
 - [Requirements](#requirements)
 - [Architecture](#architecture)
 - [Contributing](#contributing)
@@ -423,6 +424,10 @@ do {
 ## Documentation
 
 Explore the **[Documentation](https://erikote04.github.io/Swift-Network-Layer/documentation/swiftnetwork/)**. You can also launch the demo app from the Sample App folder and review the Sample App README for a walkthrough.
+
+## Testing
+
+SwiftNetwork currently includes **256 tests** with a **78% coverage percentage**.
 
 ## Requirements
 
