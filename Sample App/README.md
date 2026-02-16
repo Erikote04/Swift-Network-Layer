@@ -162,6 +162,12 @@ Steps:
 - Some flows (Sign in with Apple) work best on a real device.
 - If you edit Info.plist or entitlements, do a clean build.
 
+## TODO
+
+- [ ] Add SSL pinning support.
+- [ ] Implement refresh auth token flow.
+- [ ] Add Google Sign-In integration.
+
 ## Notes
 
 This app is intentionally small and readable. The patterns demonstrated here should translate directly to production usage with proper error handling, logging, and security hardening.
