@@ -15,8 +15,13 @@ actor CacheMetricsCollector: NetworkMetrics {
     func recordError(_ event: ErrorMetricEvent) async { }
     func recordRetry(_ event: RetryMetricEvent) async { }
 
-    func recordCacheHit(_ event: CacheMetricEvent) async {
+    func recordCacheEvent(_ event: CacheMetricEvent) async {
         lastCacheResult = event.result
+    }
+
+    @available(*, deprecated, renamed: "recordCacheEvent(_:)")
+    func recordCacheHit(_ event: CacheMetricEvent) async {
+        await recordCacheEvent(event)
     }
 
     func reset() async {

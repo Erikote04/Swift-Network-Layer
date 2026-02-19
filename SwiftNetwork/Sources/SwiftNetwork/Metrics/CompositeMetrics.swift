@@ -70,13 +70,18 @@ public actor CompositeMetrics: NetworkMetrics {
         }
     }
     
-    public func recordCacheHit(_ event: CacheMetricEvent) async {
+    public func recordCacheEvent(_ event: CacheMetricEvent) async {
         await withTaskGroup(of: Void.self) { group in
             for collector in collectors {
                 group.addTask {
-                    await collector.recordCacheHit(event)
+                    await collector.recordCacheEvent(event)
                 }
             }
         }
+    }
+
+    @available(*, deprecated, renamed: "recordCacheEvent(_:)")
+    public func recordCacheHit(_ event: CacheMetricEvent) async {
+        await recordCacheEvent(event)
     }
 }

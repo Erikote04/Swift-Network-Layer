@@ -101,10 +101,15 @@ public actor FilteredMetrics: NetworkMetrics {
         }
     }
     
-    public func recordCacheHit(_ event: CacheMetricEvent) async {
+    public func recordCacheEvent(_ event: CacheMetricEvent) async {
         if filter(.cache(event)) {
-            await collector.recordCacheHit(event)
+            await collector.recordCacheEvent(event)
         }
+    }
+
+    @available(*, deprecated, renamed: "recordCacheEvent(_:)")
+    public func recordCacheHit(_ event: CacheMetricEvent) async {
+        await recordCacheEvent(event)
     }
 }
 

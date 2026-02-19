@@ -33,8 +33,19 @@ public protocol NetworkMetrics: Sendable {
     /// - Parameter event: The retry event containing attempt metadata.
     func recordRetry(_ event: RetryMetricEvent) async
     
+    /// Records a cache event.
+    ///
+    /// - Parameter event: The cache event containing cache status.
+    func recordCacheEvent(_ event: CacheMetricEvent) async
+
     /// Records a cache hit or miss.
     ///
     /// - Parameter event: The cache event containing cache status.
     func recordCacheHit(_ event: CacheMetricEvent) async
+}
+
+public extension NetworkMetrics {
+    func recordCacheEvent(_ event: CacheMetricEvent) async {
+        await recordCacheHit(event)
+    }
 }

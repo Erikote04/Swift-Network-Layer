@@ -117,13 +117,18 @@ public actor AggregateMetrics: NetworkMetrics {
         retryCount += 1
     }
     
-    public func recordCacheHit(_ event: CacheMetricEvent) {
+    public func recordCacheEvent(_ event: CacheMetricEvent) {
         switch event.result {
         case .hit, .revalidated:
             cacheHitCount += 1
         case .miss:
             cacheMissCount += 1
         }
+    }
+
+    @available(*, deprecated, renamed: "recordCacheEvent(_:)")
+    public func recordCacheHit(_ event: CacheMetricEvent) {
+        recordCacheEvent(event)
     }
     
     /// Returns a snapshot of current metrics.

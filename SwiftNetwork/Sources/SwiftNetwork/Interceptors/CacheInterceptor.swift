@@ -82,11 +82,11 @@ public struct CacheInterceptor: Interceptor {
     ) async throws -> Response {
         // Try to get cached response
         if let cached = await cache.cachedResponse(for: request) {
-            await recordCacheHit(request: request, result: .hit)
+            await recordCacheEvent(request: request, result: .hit)
             return cached
         }
         
-        await recordCacheHit(request: request, result: .miss)
+        await recordCacheEvent(request: request, result: .miss)
         
         // Fetch from network and cache
         let response = try await chain.proceed(request)
@@ -103,7 +103,7 @@ public struct CacheInterceptor: Interceptor {
         request: Request,
         chain: InterceptorChainProtocol
     ) async throws -> Response {
-        await recordCacheHit(request: request, result: .miss)
+        await recordCacheEvent(request: request, result: .miss)
         
         let response = try await chain.proceed(request)
         
@@ -122,7 +122,7 @@ public struct CacheInterceptor: Interceptor {
     ) async throws -> Response {
         // Get cached entry (not just response, need metadata)
         guard let cachedEntry = await cache.cachedEntry(for: request) else {
-            await recordCacheHit(request: request, result: .miss)
+            await recordCacheEvent(request: request, result: .miss)
             
             // No cache, fetch normally
             let response = try await chain.proceed(request)
@@ -159,11 +159,11 @@ public struct CacheInterceptor: Interceptor {
         
         // If 304 Not Modified, return cached response
         if response.statusCode == 304 {
-            await recordCacheHit(request: request, result: .revalidated)
+            await recordCacheEvent(request: request, result: .revalidated)
             return cachedEntry.response
         }
         
-        await recordCacheHit(request: request, result: .miss)
+        await recordCacheEvent(request: request, result: .miss)
         
         // Otherwise, cache new response
         if (200..<300).contains(response.statusCode) {
@@ -194,7 +194,7 @@ public struct CacheInterceptor: Interceptor {
             
             // Check if entry is still fresh
             if !cachedEntry.isExpired {
-                await recordCacheHit(request: request, result: .hit)
+                await recordCacheEvent(request: request, result: .hit)
                 return cachedEntry.response
             }
             
@@ -217,7 +217,7 @@ public struct CacheInterceptor: Interceptor {
         request: Request,
         chain: InterceptorChainProtocol
     ) async throws -> Response {
-        await recordCacheHit(request: request, result: .miss)
+        await recordCacheEvent(request: request, result: .miss)
         
         let response = try await chain.proceed(request)
         
@@ -244,7 +244,7 @@ public struct CacheInterceptor: Interceptor {
     /// - Parameters:
     ///   - request: The request being processed.
     ///   - result: The cache operation result.
-    private func recordCacheHit(
+    private func recordCacheEvent(
         request: Request,
         result: CacheMetricEvent.CacheResult
     ) async {
@@ -257,6 +257,6 @@ public struct CacheInterceptor: Interceptor {
             timestamp: Date()
         )
         
-        await metrics.recordCacheHit(event)
+        await metrics.recordCacheEvent(event)
     }
 }

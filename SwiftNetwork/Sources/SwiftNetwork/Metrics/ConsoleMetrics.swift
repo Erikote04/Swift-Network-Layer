@@ -78,12 +78,17 @@ public actor ConsoleMetrics: NetworkMetrics {
             """)
     }
     
-    public func recordCacheHit(_ event: CacheMetricEvent) {
+    public func recordCacheEvent(_ event: CacheMetricEvent) {
         let tagsString = self.formatTags(event.tags)
         cacheLogger.debug("""
             [\(event.method.rawValue)] \(event.url.absoluteString) \
             → CACHE \(event.result.rawValue.uppercased())\(tagsString)
             """)
+    }
+
+    @available(*, deprecated, renamed: "recordCacheEvent(_:)")
+    public func recordCacheHit(_ event: CacheMetricEvent) {
+        recordCacheEvent(event)
     }
     
     private func formatTags(_ tags: [String: String]) -> String {

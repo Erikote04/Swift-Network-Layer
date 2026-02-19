@@ -13,7 +13,12 @@ actor RetryMetricsCollector: NetworkMetrics {
 
     func recordRequest(_ event: RequestMetricEvent) async { }
     func recordError(_ event: ErrorMetricEvent) async { }
-    func recordCacheHit(_ event: CacheMetricEvent) async { }
+    func recordCacheEvent(_ event: CacheMetricEvent) async { }
+
+    @available(*, deprecated, renamed: "recordCacheEvent(_:)")
+    func recordCacheHit(_ event: CacheMetricEvent) async {
+        await recordCacheEvent(event)
+    }
 
     func recordRetry(_ event: RetryMetricEvent) async {
         retries += 1
