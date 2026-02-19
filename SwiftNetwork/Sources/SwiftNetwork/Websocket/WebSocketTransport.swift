@@ -31,7 +31,7 @@ public actor WebSocketTransport {
     private var messageContinuation: AsyncStream<WebSocketMessage>.Continuation?
     
     /// Current connection state.
-    private var isConnected = false
+    private var connected = false
     
     /// Indicates if the connection was explicitly closed by the client.
     private var explicitlyClosed = false
@@ -108,7 +108,7 @@ public actor WebSocketTransport {
         // Start receiving messages
         startReceiving()
         
-        self.isConnected = true
+        self.connected = true
         self.reconnectAttempts = 0
         
         // Start connection monitoring if enabled
@@ -159,7 +159,7 @@ public actor WebSocketTransport {
         reason: String? = nil
     ) async {
         explicitlyClosed = true
-        isConnected = false
+        connected = false
         
         if let monitor = connectionMonitor {
             await monitor.stop()
@@ -181,7 +181,7 @@ public actor WebSocketTransport {
     /// - Throws: `WebSocketError.alreadyClosed` if the connection is closed,
     ///   or `WebSocketError.sendFailed` if the send operation fails.
     public func send(_ message: WebSocketMessage) async throws {
-        guard let task = webSocketTask, isConnected else {
+        guard let task = webSocketTask, connected else {
             throw WebSocketError.alreadyClosed
         }
         
@@ -211,7 +211,7 @@ public actor WebSocketTransport {
     /// - Throws: `WebSocketError.alreadyClosed` if the connection is closed,
     ///   or `WebSocketError.sendFailed` if the ping fails.
     public func ping() async throws {
-        guard let task = webSocketTask, isConnected else {
+        guard let task = webSocketTask, connected else {
             throw WebSocketError.alreadyClosed
         }
         
@@ -266,7 +266,7 @@ public actor WebSocketTransport {
     
     /// Receives the next message from the WebSocket.
     private func receiveNextMessage() async {
-        guard let task = webSocketTask, isConnected else { return }
+        guard let task = webSocketTask, connected else { return }
         
         do {
             let message = try await task.receive()
@@ -332,7 +332,7 @@ public actor WebSocketTransport {
     
     /// Handles connection loss and triggers reconnection if enabled.
     private func handleDisconnection(reason: String) async {
-        isConnected = false
+        connected = false
         
         // Stop monitoring
         if let monitor = connectionMonitor {
@@ -374,6 +374,12 @@ public actor WebSocketTransport {
     // MARK: - State
     
     /// Indicates whether the WebSocket is currently connected.
+    public var isConnected: Bool {
+        connected
+    }
+
+    /// Indicates whether the WebSocket is currently connected.
+    @available(*, deprecated, renamed: "isConnected")
     public var connectionState: Bool {
         isConnected
     }

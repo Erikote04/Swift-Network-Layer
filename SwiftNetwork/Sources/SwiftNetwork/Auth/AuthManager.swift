@@ -26,7 +26,7 @@ public actor AuthManager {
     private let tokenStore: TokenStore
     private let refreshCoordinator: AuthRefreshCoordinator
     private var credentials: AuthCredentials?
-    private var refreshProvider: (@Sendable (String) async throws -> AuthCredentials)?
+    private var refreshProvider: (@Sendable (_ refreshToken: String) async throws -> AuthCredentials)?
     
     /// Creates a new authentication manager.
     ///
@@ -67,7 +67,9 @@ public actor AuthManager {
     /// It receives the current refresh token and should return new credentials.
     ///
     /// - Parameter provider: A closure that performs token refresh.
-    public func setRefreshProvider(_ provider: @escaping @Sendable (String) async throws -> AuthCredentials) {
+    public func setRefreshProvider(
+        _ provider: @escaping @Sendable (_ refreshToken: String) async throws -> AuthCredentials
+    ) {
         self.refreshProvider = provider
     }
     

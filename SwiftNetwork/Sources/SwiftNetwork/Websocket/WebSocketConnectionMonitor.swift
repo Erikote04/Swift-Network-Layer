@@ -28,7 +28,7 @@ public actor WebSocketConnectionMonitor {
     // MARK: - State
     
     /// Whether the monitor is currently running.
-    private var isRunning = false
+    private var monitoringIsRunning = false
     
     /// The task handling the monitoring loop.
     private var monitorTask: Task<Void, Never>?
@@ -37,7 +37,7 @@ public actor WebSocketConnectionMonitor {
     private var lastPongTime: Date?
     
     /// Callback to invoke when connection health changes.
-    private var healthCallback: (@Sendable (Bool) async -> Void)?
+    private var healthCallback: (@Sendable (_ isHealthy: Bool) async -> Void)?
     
     // MARK: - Initialization
     
@@ -67,11 +67,11 @@ public actor WebSocketConnectionMonitor {
     ///   - onHealthChange: A callback invoked when connection health changes.
     public func start(
         sendPing: @escaping @Sendable () async throws -> Void,
-        onHealthChange: @escaping @Sendable (Bool) async -> Void
+        onHealthChange: @escaping @Sendable (_ isHealthy: Bool) async -> Void
     ) {
-        guard !isRunning else { return }
+        guard !monitoringIsRunning else { return }
         
-        isRunning = true
+        monitoringIsRunning = true
         healthCallback = onHealthChange
         lastPongTime = Date()
         
@@ -85,7 +85,7 @@ public actor WebSocketConnectionMonitor {
     
     /// Stops monitoring the connection.
     public func stop() {
-        isRunning = false
+        monitoringIsRunning = false
         monitorTask?.cancel()
         monitorTask = nil
     }
@@ -98,6 +98,12 @@ public actor WebSocketConnectionMonitor {
     }
     
     /// Whether the monitor is currently running.
+    public var isRunning: Bool {
+        monitoringIsRunning
+    }
+
+    /// Whether the monitor is currently running.
+    @available(*, deprecated, renamed: "isRunning")
     public var running: Bool {
         isRunning
     }
@@ -106,13 +112,13 @@ public actor WebSocketConnectionMonitor {
     
     private func monitorLoop(
         sendPing: @escaping @Sendable () async throws -> Void,
-        onHealthChange: @escaping @Sendable (Bool) async -> Void
+        onHealthChange: @escaping @Sendable (_ isHealthy: Bool) async -> Void
     ) async {
-        while !Task.isCancelled && isRunning {
+        while !Task.isCancelled && monitoringIsRunning {
             // Wait for the ping interval
             try? await Task.sleep(nanoseconds: UInt64(pingInterval * 1_000_000_000))
             
-            guard !Task.isCancelled && isRunning else { break }
+            guard !Task.isCancelled && monitoringIsRunning else { break }
             
             // Send ping
             do {
