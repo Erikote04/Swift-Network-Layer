@@ -67,7 +67,7 @@ actor URLSessionTransport: Transport, ProgressReportingTransport, StreamingTrans
     ///   or the response is invalid.
     func execute(
         _ request: Request,
-        progress: (@Sendable (Progress) -> Void)?
+        progress: (@Sendable (TransferProgress) -> Void)?
     ) async throws -> Response {
         let urlRequest = try makeURLRequest(from: request)
 
@@ -184,7 +184,7 @@ actor URLSessionTransport: Transport, ProgressReportingTransport, StreamingTrans
     private func executeWithProgress(
         _ urlRequest: URLRequest,
         request: Request,
-        progress: @escaping @Sendable (Progress) -> Void
+        progress: @escaping @Sendable (TransferProgress) -> Void
     ) async throws -> Response {
         try await withTaskPriority(request.priority.swiftTaskPriority) { [session] in
             let delegate = ProgressDelegate(progressHandler: progress)
@@ -255,9 +255,9 @@ actor URLSessionTransport: Transport, ProgressReportingTransport, StreamingTrans
 /// A URLSessionTaskDelegate that tracks and reports upload/download progress.
 private final class ProgressDelegate: NSObject, URLSessionTaskDelegate, URLSessionDataDelegate {
     
-    private let progressHandler: @Sendable (Progress) -> Void
+    private let progressHandler: @Sendable (TransferProgress) -> Void
     
-    init(progressHandler: @escaping @Sendable (Progress) -> Void) {
+    init(progressHandler: @escaping @Sendable (TransferProgress) -> Void) {
         self.progressHandler = progressHandler
     }
     
@@ -270,7 +270,7 @@ private final class ProgressDelegate: NSObject, URLSessionTaskDelegate, URLSessi
         totalBytesSent: Int64,
         totalBytesExpectedToSend: Int64
     ) {
-        let progress = Progress(
+        let progress = TransferProgress(
             bytesTransferred: totalBytesSent,
             totalBytes: totalBytesExpectedToSend
         )

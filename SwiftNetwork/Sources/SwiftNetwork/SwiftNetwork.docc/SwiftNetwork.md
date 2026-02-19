@@ -85,7 +85,7 @@ Each interceptor decides whether to:
 
 * ``Call``
 * ``ProgressCall``
-* ``SwiftNetwork/Progress-struct``
+* ``SwiftNetwork/TransferProgress-struct``
 * ``StreamingCall``
 * ``StreamingResponse``
 * ``RequestPriority``

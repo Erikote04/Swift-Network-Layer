@@ -9,9 +9,9 @@ import Foundation
 
 /// Represents progress information for an ongoing network operation.
 ///
-/// `Progress` encapsulates the current state of an upload or download operation,
+/// `TransferProgress` encapsulates the current state of an upload or download operation,
 /// providing both raw byte counts and a normalized completion fraction.
-public struct Progress: Sendable {
+public struct TransferProgress: Sendable {
     
     /// The number of bytes transferred so far.
     public let bytesTransferred: Int64
@@ -40,6 +40,10 @@ public struct Progress: Sendable {
     }
 }
 
+/// Backward-compatible alias for `TransferProgress`.
+@available(*, deprecated, renamed: "TransferProgress")
+public typealias Progress = TransferProgress
+
 /// A protocol for calls that support progress reporting.
 ///
 /// `ProgressCall` extends the basic `Call` protocol with the ability to
@@ -52,7 +56,7 @@ public struct Progress: Sendable {
 /// ## Example Usage
 ///
 /// ```swift
-/// let call = client.newCall(uploadRequest)
+/// let call = client.makeCall(uploadRequest)
 ///
 /// if let progressCall = call as? ProgressCall {
 ///     let response = try await progressCall.execute { progress in
@@ -76,7 +80,7 @@ public protocol ProgressCall: Call {
     /// - Note: The progress handler may not be called for very small requests
     ///   or if the server doesn't provide content-length information.
     func execute(
-        progress: @escaping @Sendable (Progress) -> Void
+        progress: @escaping @Sendable (TransferProgress) -> Void
     ) async throws -> Response
 }
 

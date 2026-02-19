@@ -53,7 +53,7 @@ struct TransportCall: ProgressCall, StreamingCall {
     /// - Returns: The resulting `Response`.
     /// - Throws: Any error produced by the transport.
     public func execute(
-        progress: @escaping @Sendable (Progress) -> Void
+        progress: @escaping @Sendable (TransferProgress) -> Void
     ) async throws -> Response {
         try await stateController.beginExecution()
 

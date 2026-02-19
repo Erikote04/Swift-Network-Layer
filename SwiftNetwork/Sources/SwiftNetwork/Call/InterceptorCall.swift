@@ -48,7 +48,7 @@ struct InterceptorCall: ProgressCall, StreamingCall {
     /// - Returns: The resulting `Response`.
     /// - Throws: Any error produced by an interceptor or the transport.
     public func execute(
-        progress: @escaping @Sendable (Progress) -> Void
+        progress: @escaping @Sendable (TransferProgress) -> Void
     ) async throws -> Response {
         try await stateController.beginExecution()
         
@@ -67,7 +67,7 @@ struct InterceptorCall: ProgressCall, StreamingCall {
     /// - Returns: The resulting `Response`.
     /// - Throws: Any error produced by an interceptor or the transport.
     private func performExecute(
-        progress: (@Sendable (Progress) -> Void)?
+        progress: (@Sendable (TransferProgress) -> Void)?
     ) async throws -> Response {
         let chain = InterceptorChain(
             interceptors: interceptors,

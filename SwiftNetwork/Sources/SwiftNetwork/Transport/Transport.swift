@@ -34,7 +34,7 @@ protocol ProgressReportingTransport: Transport {
     /// - Throws: A `NetworkError` if the request fails or is cancelled.
     func execute(
         _ request: Request,
-        progress: (@Sendable (Progress) -> Void)?
+        progress: (@Sendable (TransferProgress) -> Void)?
     ) async throws -> Response
 }
 
