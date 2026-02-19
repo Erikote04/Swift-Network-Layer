@@ -56,7 +56,7 @@ final class CacheDemoViewModel {
 
         do {
             let client = try configuredClient()
-            let response = try await client.newCall(request).execute()
+            let response = try await client.makeCall(request).execute()
 
             let decoder = JSONDecoder()
             let repos = try decoder.decode([GitHubRepo].self, from: response.body ?? Data())

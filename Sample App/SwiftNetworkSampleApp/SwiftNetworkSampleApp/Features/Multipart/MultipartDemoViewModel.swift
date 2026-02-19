@@ -39,7 +39,7 @@ final class MultipartDemoViewModel {
         let client = NetworkClient(configuration: NetworkClientConfiguration(baseURL: baseURL))
 
         do {
-            let call = client.newCall(request)
+            let call = client.makeCall(request)
             guard let progressCall = call as? ProgressCall else {
                 state = .failed("Progress reporting is unavailable for this request.")
                 return

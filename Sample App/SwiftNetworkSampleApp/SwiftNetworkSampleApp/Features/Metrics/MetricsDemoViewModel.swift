@@ -44,8 +44,8 @@ final class MetricsDemoViewModel {
             let request1 = Request(method: .get, url: URL(string: "/orgs/apple")!)
             let request2 = Request(method: .get, url: URL(string: "/orgs/apple/repos")!)
 
-            async let response1 = client.newCall(request1).execute()
-            async let response2 = client.newCall(request2).execute()
+            async let response1 = client.makeCall(request1).execute()
+            async let response2 = client.makeCall(request2).execute()
             _ = try await (response1, response2)
 
             let snapshot = await metrics.snapshot()

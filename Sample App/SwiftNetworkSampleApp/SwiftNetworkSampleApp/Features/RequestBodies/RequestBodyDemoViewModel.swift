@@ -79,7 +79,7 @@ final class RequestBodyDemoViewModel {
         }
 
         do {
-            let response = try await client.newCall(request).execute()
+            let response = try await client.makeCall(request).execute()
             let body = response.body.flatMap { String(data: $0, encoding: .utf8) } ?? "No body"
             state = .success(body)
         } catch {

@@ -35,7 +35,7 @@ final class StreamingDemoViewModel {
             cachePolicy: .ignoreCache
         )
 
-        guard let streamingCall = client.newCall(request) as? StreamingCall else {
+        guard let streamingCall = client.makeCall(request) as? StreamingCall else {
             state = .failed("StreamingCall not supported")
             return
         }

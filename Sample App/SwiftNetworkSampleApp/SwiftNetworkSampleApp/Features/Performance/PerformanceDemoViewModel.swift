@@ -42,8 +42,8 @@ final class PerformanceDemoViewModel {
 
         do {
             let started = Date()
-            async let first = timed { try await client.newCall(request).execute() }
-            async let second = timed { try await client.newCall(request).execute() }
+            async let first = timed { try await client.makeCall(request).execute() }
+            async let second = timed { try await client.makeCall(request).execute() }
 
             let (firstResponse, firstDuration) = try await first
             let (secondResponse, secondDuration) = try await second
@@ -97,8 +97,8 @@ final class PerformanceDemoViewModel {
 
         do {
             let started = Date()
-            async let high = timed { try await client.newCall(highRequest).execute() }
-            async let background = timed { try await client.newCall(backgroundRequest).execute() }
+            async let high = timed { try await client.makeCall(highRequest).execute() }
+            async let background = timed { try await client.makeCall(backgroundRequest).execute() }
 
             let (highResponse, highDuration) = try await high
             let (backgroundResponse, backgroundDuration) = try await background

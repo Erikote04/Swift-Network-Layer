@@ -46,7 +46,7 @@ final class WebSocketDemoViewModel {
 
         let url = URL(string: "https://echo.websocket.events")!
         let request = Request(method: .get, url: url)
-        let call = client.newWebSocketCall(request)
+        let call = client.makeWebSocketCall(request)
 
         do {
             let transport = try await call.connect()

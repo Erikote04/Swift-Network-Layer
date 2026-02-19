@@ -56,13 +56,13 @@ public final class NetworkClient: NetworkClientProtocol {
         self.deduplicator = configuration.enableDeduplication ? RequestDeduplicator() : nil
     }
     
-    /// Creates a new executable network call for the given request.
+    /// Creates an executable network call for the given request.
     ///
     /// The request is resolved against the client configuration before execution.
     ///
     /// - Parameter request: The request to execute.
     /// - Returns: A `Call` representing the executable request.
-    public func newCall(_ request: Request) -> Call {
+    public func makeCall(_ request: Request) -> Call {
         let resolvedRequest = resolve(request)
         
         let baseCall = InterceptorCall(
@@ -80,6 +80,15 @@ public final class NetworkClient: NetworkClientProtocol {
         }
         
         return baseCall
+    }
+
+    /// Creates a new executable network call for the given request.
+    ///
+    /// - Parameter request: The request to execute.
+    /// - Returns: A `Call` representing the executable request.
+    @available(*, deprecated, renamed: "makeCall(_:)")
+    public func newCall(_ request: Request) -> Call {
+        makeCall(request)
     }
     
     /// Resolves interceptors for a call, injecting shared coordination when required.
@@ -159,7 +168,7 @@ public final class NetworkClient: NetworkClientProtocol {
     
     // MARK: - WebSocket Support
     
-    /// Creates a new WebSocket call for the given request.
+    /// Creates a WebSocket call for the given request.
     ///
     /// WebSocket calls establish a persistent bidirectional connection
     /// for real-time communication. Unlike standard HTTP calls, WebSocket
@@ -181,7 +190,7 @@ public final class NetworkClient: NetworkClientProtocol {
     ///
     /// - Parameter request: The WebSocket connection request.
     /// - Returns: A `WebSocketCall` that can be used to establish the connection.
-    public func newWebSocketCall(_ request: Request) -> WebSocketCall {
+    public func makeWebSocketCall(_ request: Request) -> WebSocketCall {
         let resolvedRequest = resolveWebSocketRequest(request)
         let (tokenStore, authManager) = extractAuth()
         
@@ -191,6 +200,15 @@ public final class NetworkClient: NetworkClientProtocol {
             tokenStore: tokenStore,
             authManager: authManager
         )
+    }
+
+    /// Creates a new WebSocket call for the given request.
+    ///
+    /// - Parameter request: The WebSocket connection request.
+    /// - Returns: A `WebSocketCall` that can be used to establish the connection.
+    @available(*, deprecated, renamed: "makeWebSocketCall(_:)")
+    public func newWebSocketCall(_ request: Request) -> WebSocketCall {
+        makeWebSocketCall(request)
     }
     
     // MARK: - WebSocket Private Helpers

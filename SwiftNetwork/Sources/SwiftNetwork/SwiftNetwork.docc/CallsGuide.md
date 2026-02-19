@@ -9,7 +9,7 @@ A ``Call`` represents a single executable request. Calls are Sendable and safe t
 ## Execute a call
 
 ```swift
-let call = client.newCall(request)
+let call = client.makeCall(request)
 let response = try await call.execute()
 ```
 

@@ -14,6 +14,21 @@ import Foundation
 /// and transport coordination.
 public protocol NetworkClientProtocol: Sendable {
 
+    /// Creates an executable network call for the given request.
+    ///
+    /// - Parameter request: The request to execute.
+    /// - Returns: A `Call` representing the executable request.
+    func makeCall(_ request: Request) -> Call
+    
+    /// Creates a WebSocket call for the given request.
+    ///
+    /// WebSocket calls establish persistent bidirectional connections
+    /// for real-time communication.
+    ///
+    /// - Parameter request: The WebSocket connection request.
+    /// - Returns: A `WebSocketCall` that can be used to establish the connection.
+    func makeWebSocketCall(_ request: Request) -> WebSocketCall
+
     /// Creates a new executable network call for the given request.
     ///
     /// - Parameter request: The request to execute.
@@ -28,4 +43,14 @@ public protocol NetworkClientProtocol: Sendable {
     /// - Parameter request: The WebSocket connection request.
     /// - Returns: A `WebSocketCall` that can be used to establish the connection.
     func newWebSocketCall(_ request: Request) -> WebSocketCall
+}
+
+public extension NetworkClientProtocol {
+    func makeCall(_ request: Request) -> Call {
+        newCall(request)
+    }
+
+    func makeWebSocketCall(_ request: Request) -> WebSocketCall {
+        newWebSocketCall(request)
+    }
 }

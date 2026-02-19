@@ -9,7 +9,7 @@ Use ``ProgressCall`` for upload and download progress, and ``StreamingCall`` for
 ## Progress
 
 ```swift
-let call = client.newCall(request)
+let call = client.makeCall(request)
 if let progressCall = call as? ProgressCall {
     _ = try await progressCall.execute { progress in
         print(progress.fractionCompleted)
@@ -20,7 +20,7 @@ if let progressCall = call as? ProgressCall {
 ## Streaming
 
 ```swift
-let call = client.newCall(request)
+let call = client.makeCall(request)
 if let streamingCall = call as? StreamingCall {
     for try await chunk in streamingCall.stream() {
         handle(chunk)

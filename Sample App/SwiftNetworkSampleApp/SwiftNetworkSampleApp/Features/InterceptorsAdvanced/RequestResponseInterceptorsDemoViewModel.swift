@@ -55,7 +55,7 @@ final class RequestResponseInterceptorsDemoViewModel {
         let request = Request(method: .get, url: URL(string: path)!, cachePolicy: .ignoreCache)
 
         do {
-            let response = try await client.newCall(request).execute()
+            let response = try await client.makeCall(request).execute()
             responseHeaders = response.headers.all
             let body = response.body.flatMap { String(data: $0, encoding: .utf8) } ?? "No body"
             state = .success(body: body)

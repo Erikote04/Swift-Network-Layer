@@ -86,7 +86,7 @@ let request = Request(
 )
 
 do {
-    let response = try await client.newCall(request).execute()
+    let response = try await client.makeCall(request).execute()
     print("Status: \(response.statusCode)")
 
     if let data = response.body {
@@ -155,7 +155,7 @@ struct Response {
 A `Call` represents an executable request with cancellation support:
 
 ```swift
-let call = client.newCall(request)
+let call = client.makeCall(request)
 
 let response = try await call.execute()
 
@@ -176,7 +176,7 @@ let request = Request(
     url: URL(string: "https://api.example.com/users")!
 )
 
-let response = try await client.newCall(request).execute()
+let response = try await client.makeCall(request).execute()
 if response.isSuccessful {
     print("Success!")
 }
@@ -199,7 +199,7 @@ let request = Request(
     body: .json(user)
 )
 
-let response = try await client.newCall(request).execute()
+let response = try await client.makeCall(request).execute()
 ```
 
 ### Using Request Builder
@@ -211,14 +211,14 @@ var builder = RequestBuilder(
 )
 
 builder
-    .header("Content-Type", "application/json")
-    .header("Authorization", "Bearer \(token)")
+    .header("Content-Type", value: "application/json")
+    .header("Authorization", value: "Bearer \(token)")
     .body(.json(["name": "Alex"]))
     .timeout(20.0)
     .cachePolicy(.ignoreCache)
 
 let request = builder.build()
-let response = try await client.newCall(request).execute()
+let response = try await client.makeCall(request).execute()
 ```
 
 ### Decoding Responses
@@ -235,11 +235,11 @@ let request = Request(
     url: URL(string: "https://api.example.com/users/123")!
 )
 
-let user: User = try await client.newCall(request).execute()
+let user: User = try await client.makeCall(request).execute()
 
 let decoder = JSONDecoder()
 decoder.keyDecodingStrategy = .convertFromSnakeCase
-let customUser: User = try await client.newCall(request).execute(decoder: decoder)
+let customUser: User = try await client.makeCall(request).execute(decoder: decoder)
 ```
 
 ### Streaming
@@ -250,7 +250,7 @@ let request = Request(
     url: URL(string: "https://api.example.com/large-file")!
 )
 
-let call = client.newCall(request)
+let call = client.makeCall(request)
 if let streamingCall = call as? StreamingCall {
     for try await chunk in streamingCall.stream() {
         print("Received \(chunk.count) bytes")
@@ -267,7 +267,7 @@ let request = Request(
     body: .data(Data(repeating: 0xFF, count: 1024 * 64))
 )
 
-let call = client.newCall(request)
+let call = client.makeCall(request)
 if let progressCall = call as? ProgressCall {
     _ = try await progressCall.execute { progress in
         print("Progress: \(progress.fractionCompleted)")
@@ -283,7 +283,7 @@ let request = Request(
     url: URL(string: "wss://example.com/socket")!
 )
 
-let call = client.newWebSocketCall(request)
+let call = client.makeWebSocketCall(request)
 try await call.connect()
 try await call.send(text: "hello")
 ```
@@ -401,7 +401,7 @@ let config = NetworkClientConfiguration(metricsCollectors: [metrics])
 
 ```swift
 do {
-    let user: User = try await client.newCall(request).execute()
+    let user: User = try await client.makeCall(request).execute()
     print("Success: \(user.name)")
 } catch NetworkError.cancelled {
     print("Request was cancelled")

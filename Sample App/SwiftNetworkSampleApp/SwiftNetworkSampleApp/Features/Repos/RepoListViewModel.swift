@@ -37,7 +37,7 @@ final class RepoListViewModel {
 
         do {
             let repos: [GitHubRepo] = try await client
-                .newCall(request)
+                .makeCall(request)
                 .execute(decoder: JSONDecoder())
 
             state = .loaded(repos.sorted { $0.stargazersCount > $1.stargazersCount })

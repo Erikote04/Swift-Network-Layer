@@ -10,7 +10,7 @@ Connect and monitor real-time streams.
 
 ```swift
 let request = Request(method: .get, url: URL(string: "/ws")!)
-let call = client.newWebSocketCall(request)
+let call = client.makeWebSocketCall(request)
 let transport = try await call.connect()
 ```
 

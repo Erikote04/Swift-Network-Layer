@@ -22,7 +22,7 @@ import Foundation
 /// ## Example Usage
 ///
 /// ```swift
-/// let call = client.newCall(downloadRequest)
+/// let call = client.makeCall(downloadRequest)
 ///
 /// if let streamingCall = call as? StreamingCall {
 ///     for try await chunk in streamingCall.stream() {

@@ -20,6 +20,6 @@ let request = Request(
 ## Execute and decode
 
 ```swift
-let response = try await client.newCall(request).execute()
-let user: User = try await client.newCall(request).execute()
+let response = try await client.makeCall(request).execute()
+let user: User = try await client.makeCall(request).execute()
 ```

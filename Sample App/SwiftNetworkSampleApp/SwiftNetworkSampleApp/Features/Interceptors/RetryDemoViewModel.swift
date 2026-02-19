@@ -46,7 +46,7 @@ final class RetryDemoViewModel {
             )
             let client = NetworkClient(configuration: config)
 
-            let response = try await client.newCall(request).execute()
+            let response = try await client.makeCall(request).execute()
             let bodyText = response.body.flatMap { String(data: $0, encoding: .utf8) } ?? "No body"
 
             retryCount = await metrics.count()

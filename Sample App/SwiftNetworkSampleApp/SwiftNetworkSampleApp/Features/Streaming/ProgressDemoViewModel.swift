@@ -37,7 +37,7 @@ final class ProgressDemoViewModel {
             cachePolicy: .ignoreCache
         )
 
-        let call = client.newCall(request)
+        let call = client.makeCall(request)
         guard let progressCall = call as? ProgressCall else {
             state = .failed("ProgressCall not supported")
             return

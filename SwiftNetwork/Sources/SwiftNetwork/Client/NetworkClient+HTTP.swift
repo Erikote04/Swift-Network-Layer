@@ -77,6 +77,6 @@ public extension NetworkClient {
             cachePolicy: cachePolicy
         )
 
-        return try await newCall(request).execute()
+        return try await makeCall(request).execute()
     }
 }
