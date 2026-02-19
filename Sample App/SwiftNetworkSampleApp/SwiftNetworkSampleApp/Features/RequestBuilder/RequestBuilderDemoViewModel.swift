@@ -45,7 +45,7 @@ final class RequestBuilderDemoViewModel {
         let requestURL = components?.url ?? URL(string: "https://api.github.com/search/repositories")!
 
         builder = RequestBuilder(method: .get, url: requestURL)
-        builder.header("Accept", "application/vnd.github+json")
+        builder.header("Accept", value: "application/vnd.github+json")
         builder.timeout(20)
         builder.cachePolicy(.ignoreCache)
 
@@ -53,7 +53,7 @@ final class RequestBuilderDemoViewModel {
 
         do {
             let response: GitHubSearchResponse = try await client
-                .newCall(request)
+                .makeCall(request)
                 .execute(decoder: JSONDecoder())
 
             state = .loaded(response.items)

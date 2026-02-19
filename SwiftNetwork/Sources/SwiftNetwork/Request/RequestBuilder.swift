@@ -37,9 +37,21 @@ public struct RequestBuilder {
     ///   - value: The header value.
     /// - Returns: The updated builder instance.
     @discardableResult
-    public mutating func header(_ name: String, _ value: String) -> Self {
+    public mutating func header(_ name: String, value: String) -> Self {
         headers[name] = value
         return self
+    }
+
+    /// Adds or updates a single HTTP header.
+    ///
+    /// - Parameters:
+    ///   - name: The header name.
+    ///   - value: The header value.
+    /// - Returns: The updated builder instance.
+    @discardableResult
+    @available(*, deprecated, renamed: "header(_:value:)")
+    public mutating func header(_ name: String, _ value: String) -> Self {
+        header(name, value: value)
     }
 
     /// Merges multiple HTTP headers into the request.
@@ -71,9 +83,21 @@ public struct RequestBuilder {
     ///   - contentType: The MIME type of the data. Defaults to `application/octet-stream`.
     /// - Returns: The updated builder instance.
     @discardableResult
-    public mutating func body(_ data: Data?, contentType: String = "application/octet-stream") -> Self {
+    public mutating func body(data: Data?, contentType: String = "application/octet-stream") -> Self {
         self.body = data.map { .data($0, contentType: contentType) }
         return self
+    }
+
+    /// Sets the request body from raw data.
+    ///
+    /// - Parameters:
+    ///   - data: The raw request body data.
+    ///   - contentType: The MIME type of the data. Defaults to `application/octet-stream`.
+    /// - Returns: The updated builder instance.
+    @discardableResult
+    @available(*, deprecated, message: "Use body(data:contentType:) for clarity.")
+    public mutating func body(_ data: Data?, contentType: String = "application/octet-stream") -> Self {
+        body(data: data, contentType: contentType)
     }
     
     /// Sets a JSON-encoded request body.
