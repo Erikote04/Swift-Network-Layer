@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BBF82DE32F32506700F5BF3F /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BBF82DE22F32506700F5BF3F /* SwiftNetwork */; };
+		BB57D5372F60AB83009BCE03 /* SwiftNetwork in Frameworks */ = {isa = PBXBuildFile; productRef = BB57D5362F60AB83009BCE03 /* SwiftNetwork */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,7 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BBF82DE32F32506700F5BF3F /* SwiftNetwork in Frameworks */,
+				BB57D5372F60AB83009BCE03 /* SwiftNetwork in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,7 +70,7 @@
 			);
 			name = SwiftNetworkSampleApp;
 			packageProductDependencies = (
-				BBF82DE22F32506700F5BF3F /* SwiftNetwork */,
+				BB57D5362F60AB83009BCE03 /* SwiftNetwork */,
 			);
 			productName = SwiftNetworkSampleApp;
 			productReference = BBF82DD32F32502700F5BF3F /* SwiftNetworkSampleApp.app */;
@@ -101,7 +101,7 @@
 			mainGroup = BBF82DCA2F32502700F5BF3F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../.." */,
+				BB57D5352F60AB83009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BBF82DD42F32502700F5BF3F /* Products */;
@@ -344,16 +344,21 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCLocalSwiftPackageReference section */
-		BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../.." */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = ../..;
+/* Begin XCRemoteSwiftPackageReference section */
+		BB57D5352F60AB83009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/Erikote04/SwiftNetwork";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.2;
+			};
 		};
-/* End XCLocalSwiftPackageReference section */
+/* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		BBF82DE22F32506700F5BF3F /* SwiftNetwork */ = {
+		BB57D5362F60AB83009BCE03 /* SwiftNetwork */ = {
 			isa = XCSwiftPackageProductDependency;
+			package = BB57D5352F60AB83009BCE03 /* XCRemoteSwiftPackageReference "SwiftNetwork" */;
 			productName = SwiftNetwork;
 		};
 /* End XCSwiftPackageProductDependency section */
