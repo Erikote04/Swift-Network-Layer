@@ -27,7 +27,6 @@ jobs:
           swift-version: "6.1"
 
       - name: Build DocC
-        working-directory: SwiftNetwork
         run: |
           mkdir -p .docs
           swift package \
@@ -42,7 +41,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'SwiftNetwork/.docs'
+          path: '.docs'
 
   deploy:
     environment:

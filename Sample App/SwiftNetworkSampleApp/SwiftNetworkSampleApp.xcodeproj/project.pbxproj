@@ -101,7 +101,7 @@
 			mainGroup = BBF82DCA2F32502700F5BF3F;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../../SwiftNetwork" */,
+				BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../.." */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = BBF82DD42F32502700F5BF3F /* Products */;
@@ -345,9 +345,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCLocalSwiftPackageReference section */
-		BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../../SwiftNetwork" */ = {
+		BBF82DE12F32506700F5BF3F /* XCLocalSwiftPackageReference "../.." */ = {
 			isa = XCLocalSwiftPackageReference;
-			relativePath = ../../SwiftNetwork;
+			relativePath = ../..;
 		};
 /* End XCLocalSwiftPackageReference section */
 

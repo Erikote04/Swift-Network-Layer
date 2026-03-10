@@ -1,5 +1,4 @@
 // swift-tools-version: 6.1
-// The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
@@ -24,12 +23,12 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftNetwork",
-            path: "Sources/SwiftNetwork"
+            path: "SwiftNetwork/Sources/SwiftNetwork"
         ),
         .testTarget(
             name: "SwiftNetworkTests",
             dependencies: ["SwiftNetwork"],
-            path: "Tests/SwiftNetworkTests"
+            path: "SwiftNetwork/Tests/SwiftNetworkTests"
         )
     ]
 )
